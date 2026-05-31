@@ -1,6 +1,7 @@
 const CalonSiswaModel = require('../models/calonSiswaModel');
 const OrangTuaModel = require('../models/orangTuaModel');
 const BerkasModel = require('../models/berkasModel');
+const logger = require('../config/logger');
 
 // =============================================
 // BIODATA CALON SISWA
@@ -9,19 +10,12 @@ const BerkasModel = require('../models/berkasModel');
 /**
  * POST /api/siswa/biodata
  * Create biodata for the authenticated user (calon_siswa).
+ * Input validation handled by siswaValidator middleware.
  */
 const createBiodata = async (req, res) => {
   try {
     const userId = req.user.id;
     const { nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah } = req.body;
-
-    // Validation
-    if (!nisn || !nama_lengkap || !tempat_lahir || !tanggal_lahir || !jenis_kelamin || !asal_sekolah) {
-      return res.status(400).json({
-        success: false,
-        message: 'Semua field biodata wajib diisi.',
-      });
-    }
 
     // Check if biodata already exists
     const existing = await CalonSiswaModel.findByUserId(userId);
@@ -48,7 +42,7 @@ const createBiodata = async (req, res) => {
       data: { id: result.id },
     });
   } catch (error) {
-    console.error('Create Biodata Error:', error);
+    logger.error('Create Biodata Error', { error: error.message, userId });
 
     // Handle duplicate NISN
     if (error.code === 'ER_DUP_ENTRY') {
@@ -69,6 +63,7 @@ const createBiodata = async (req, res) => {
 /**
  * PUT /api/siswa/biodata
  * Update biodata for the authenticated user.
+ * Input validation handled by siswaValidator middleware.
  */
 const updateBiodata = async (req, res) => {
   try {
@@ -98,7 +93,7 @@ const updateBiodata = async (req, res) => {
       message: 'Biodata berhasil diperbarui.',
     });
   } catch (error) {
-    console.error('Update Biodata Error:', error);
+    logger.error('Update Biodata Error', { error: error.message, userId });
 
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({
@@ -136,7 +131,7 @@ const getBiodata = async (req, res) => {
       data: biodata,
     });
   } catch (error) {
-    console.error('Get Biodata Error:', error);
+    logger.error('Get Biodata Error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan.',
@@ -147,17 +142,25 @@ const getBiodata = async (req, res) => {
 
 /**
  * GET /api/siswa/all (Admin only)
- * Get all registered students.
+ * Get all registered students with pagination.
+ * Query params: ?page=1&limit=10
  */
 const getAllSiswa = async (req, res) => {
   try {
-    const students = await CalonSiswaModel.findAll();
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const search = req.query.search || '';
+    const status = req.query.status || '';
+
+    const result = await CalonSiswaModel.findAll({ page, limit, search, status });
+
     res.status(200).json({
       success: true,
-      data: students,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error) {
-    console.error('Get All Siswa Error:', error);
+    logger.error('Get All Siswa Error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan.',
@@ -169,19 +172,12 @@ const getAllSiswa = async (req, res) => {
 /**
  * PUT /api/siswa/status/:id (Admin only)
  * Update student admission status.
+ * Input validation handled by siswaValidator middleware.
  */
 const updateStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status_pendaftaran } = req.body;
-
-    const validStatuses = ['belum_lengkap', 'menunggu_verifikasi', 'lulus', 'tidak_lulus'];
-    if (!validStatuses.includes(status_pendaftaran)) {
-      return res.status(400).json({
-        success: false,
-        message: `Status tidak valid. Pilih salah satu: ${validStatuses.join(', ')}`,
-      });
-    }
 
     const siswa = await CalonSiswaModel.findById(id);
     if (!siswa) {
@@ -198,10 +194,41 @@ const updateStatus = async (req, res) => {
       message: 'Status pendaftaran berhasil diperbarui.',
     });
   } catch (error) {
-    console.error('Update Status Error:', error);
+    logger.error('Update Status Error', { id: req.params.id, error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan.',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * GET /api/siswa/cek-status/:nisn (PUBLIC — no auth required)
+ * Check registration status by NISN.
+ * Input validation handled by siswaValidator middleware.
+ */
+const cekStatusByNisn = async (req, res) => {
+  try {
+    const { nisn } = req.params;
+
+    const siswa = await CalonSiswaModel.findByNisn(nisn);
+    if (!siswa) {
+      return res.status(404).json({
+        success: false,
+        message: 'Data pendaftaran dengan NISN tersebut tidak ditemukan.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: siswa,
+    });
+  } catch (error) {
+    logger.error('Cek Status By NISN Error', { nisn: req.params.nisn, error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan saat mengecek status.',
       error: error.message,
     });
   }
@@ -214,19 +241,12 @@ const updateStatus = async (req, res) => {
 /**
  * POST /api/siswa/orang-tua
  * Create parent data linked to the authenticated user's calon_siswa record.
+ * Input validation handled by siswaValidator middleware.
  */
 const createOrangTua = async (req, res) => {
   try {
     const userId = req.user.id;
     const { nama_ayah, pekerjaan_ayah, nama_ibu, pekerjaan_ibu, no_telepon_wali, alamat_lengkap } = req.body;
-
-    // Validation
-    if (!nama_ayah || !nama_ibu || !no_telepon_wali || !alamat_lengkap) {
-      return res.status(400).json({
-        success: false,
-        message: 'Nama ayah, nama ibu, no telepon wali, dan alamat wajib diisi.',
-      });
-    }
 
     // Find calon_siswa record
     const siswa = await CalonSiswaModel.findByUserId(userId);
@@ -262,7 +282,7 @@ const createOrangTua = async (req, res) => {
       data: { id: result.id },
     });
   } catch (error) {
-    console.error('Create OrangTua Error:', error);
+    logger.error('Create OrangTua Error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan saat menyimpan data orang tua.',
@@ -274,6 +294,7 @@ const createOrangTua = async (req, res) => {
 /**
  * PUT /api/siswa/orang-tua
  * Update parent data.
+ * Input validation handled by siswaValidator middleware.
  */
 const updateOrangTua = async (req, res) => {
   try {
@@ -310,7 +331,7 @@ const updateOrangTua = async (req, res) => {
       message: 'Data orang tua berhasil diperbarui.',
     });
   } catch (error) {
-    console.error('Update OrangTua Error:', error);
+    logger.error('Update OrangTua Error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan saat memperbarui data orang tua.',
@@ -348,7 +369,7 @@ const getOrangTua = async (req, res) => {
       data: orangTua,
     });
   } catch (error) {
-    console.error('Get OrangTua Error:', error);
+    logger.error('Get OrangTua Error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan.',
@@ -364,20 +385,12 @@ const getOrangTua = async (req, res) => {
 /**
  * POST /api/siswa/upload-dokumen
  * Upload a document file (Multer handles the file).
+ * Input validation for jenis_dokumen handled by siswaValidator middleware.
  */
 const uploadDokumen = async (req, res) => {
   try {
     const userId = req.user.id;
     const { jenis_dokumen } = req.body;
-
-    // Validate jenis_dokumen
-    const validJenis = ['kk', 'akta_kelahiran', 'skl', 'pas_foto'];
-    if (!jenis_dokumen || !validJenis.includes(jenis_dokumen)) {
-      return res.status(400).json({
-        success: false,
-        message: `Jenis dokumen tidak valid. Pilih salah satu: ${validJenis.join(', ')}`,
-      });
-    }
 
     // Check if file was uploaded
     if (!req.file) {
@@ -424,7 +437,7 @@ const uploadDokumen = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Upload Dokumen Error:', error);
+    logger.error('Upload Dokumen Error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan saat mengunggah dokumen.',
@@ -456,7 +469,7 @@ const getDokumen = async (req, res) => {
       data: dokumen,
     });
   } catch (error) {
-    console.error('Get Dokumen Error:', error);
+    logger.error('Get Dokumen Error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan.',
@@ -468,19 +481,12 @@ const getDokumen = async (req, res) => {
 /**
  * PUT /api/siswa/validasi-dokumen/:id (Admin only)
  * Validate a specific document.
+ * Input validation handled by siswaValidator middleware.
  */
 const validasiDokumen = async (req, res) => {
   try {
     const { id } = req.params;
     const { status_validasi } = req.body;
-
-    const validStatuses = ['pending', 'valid', 'revisi'];
-    if (!validStatuses.includes(status_validasi)) {
-      return res.status(400).json({
-        success: false,
-        message: `Status validasi tidak valid. Pilih salah satu: ${validStatuses.join(', ')}`,
-      });
-    }
 
     const doc = await BerkasModel.findById(id);
     if (!doc) {
@@ -497,7 +503,7 @@ const validasiDokumen = async (req, res) => {
       message: 'Status validasi dokumen berhasil diperbarui.',
     });
   } catch (error) {
-    console.error('Validasi Dokumen Error:', error);
+    logger.error('Validasi Dokumen Error', { id: req.params.id, error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan.',
@@ -512,6 +518,7 @@ module.exports = {
   getBiodata,
   getAllSiswa,
   updateStatus,
+  cekStatusByNisn,
   createOrangTua,
   updateOrangTua,
   getOrangTua,

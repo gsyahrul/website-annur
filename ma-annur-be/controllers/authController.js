@@ -7,18 +7,11 @@ const SALT_ROUNDS = 10;
 /**
  * POST /api/auth/register
  * Register a new user with hashed password.
+ * Input validation handled by authValidator middleware.
  */
 const register = async (req, res) => {
   try {
     const { email, password, role } = req.body;
-
-    // Validation
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email dan password wajib diisi.',
-      });
-    }
 
     // Check if user already exists
     const existingUser = await UserModel.findByEmail(email);
@@ -61,18 +54,11 @@ const register = async (req, res) => {
 /**
  * POST /api/auth/login
  * Authenticate user and return JWT token.
+ * Input validation handled by authValidator middleware.
  */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Validation
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email dan password wajib diisi.',
-      });
-    }
 
     // Find user
     const user = await UserModel.findByEmail(email);

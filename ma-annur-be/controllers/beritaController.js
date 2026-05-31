@@ -1,4 +1,5 @@
 const BeritaModel = require('../models/beritaModel');
+const logger = require('../config/logger');
 
 /**
  * Helper: Generate slug from title.
@@ -14,17 +15,24 @@ const generateSlug = (title) => {
 
 /**
  * GET /api/berita (PUBLIC)
- * Get all published news articles.
+ * Get all published news articles with pagination and search.
+ * Query params: ?page=1&limit=10&search=ppdb
  */
 const getPublishedBerita = async (req, res) => {
   try {
-    const berita = await BeritaModel.findAllPublished();
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const search = req.query.search || '';
+
+    const result = await BeritaModel.findAllPublished({ page, limit, search });
+
     res.status(200).json({
       success: true,
-      data: berita,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error) {
-    console.error('Get Published Berita Error:', error);
+    logger.error('Get Published Berita Error', { error: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan saat mengambil data berita.',
@@ -34,18 +42,25 @@ const getPublishedBerita = async (req, res) => {
 };
 
 /**
- * GET /api/berita/all (Admin)
- * Get all news articles including drafts.
+ * GET /api/berita/admin/all (Admin)
+ * Get all news articles including drafts with pagination and search.
+ * Query params: ?page=1&limit=10&search=pengumuman
  */
 const getAllBerita = async (req, res) => {
   try {
-    const berita = await BeritaModel.findAll();
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const search = req.query.search || '';
+
+    const result = await BeritaModel.findAll({ page, limit, search });
+
     res.status(200).json({
       success: true,
-      data: berita,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error) {
-    console.error('Get All Berita Error:', error);
+    logger.error('Get All Berita Error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan.',
@@ -75,7 +90,7 @@ const getBeritaBySlug = async (req, res) => {
       data: berita,
     });
   } catch (error) {
-    console.error('Get Berita By Slug Error:', error);
+    logger.error('Get Berita By Slug Error', { slug: req.params.slug, error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan.',
@@ -93,33 +108,22 @@ const createBerita = async (req, res) => {
     const authorId = req.user.id;
     const { judul, konten, status } = req.body;
 
-    if (!judul || !konten) {
-      return res.status(400).json({
-        success: false,
-        message: 'Judul dan konten wajib diisi.',
-      });
-    }
-
-    // Generate slug from title
     let slug = generateSlug(judul);
 
-    // Ensure slug uniqueness by appending timestamp if needed
     const existingSlug = await BeritaModel.findBySlug(slug);
     if (existingSlug) {
       slug = `${slug}-${Date.now()}`;
     }
 
-    // Handle cover image (uploaded via Multer)
     const gambar_cover = req.file ? `/uploads/${req.file.filename}` : null;
 
     const result = await BeritaModel.create({
       author_id: authorId,
-      judul,
-      slug,
-      konten,
-      gambar_cover,
+      judul, slug, konten, gambar_cover,
       status: status || 'draft',
     });
+
+    logger.info('Berita dibuat', { id: result.id, judul, slug, authorId });
 
     res.status(201).json({
       success: true,
@@ -127,7 +131,7 @@ const createBerita = async (req, res) => {
       data: { id: result.id, slug },
     });
   } catch (error) {
-    console.error('Create Berita Error:', error);
+    logger.error('Create Berita Error', { error: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan saat membuat berita.',
@@ -153,7 +157,6 @@ const updateBerita = async (req, res) => {
       });
     }
 
-    // Generate new slug if title changed
     let slug = existing.slug;
     if (judul && judul !== existing.judul) {
       slug = generateSlug(judul);
@@ -163,7 +166,6 @@ const updateBerita = async (req, res) => {
       }
     }
 
-    // Handle cover image update
     const gambar_cover = req.file
       ? `/uploads/${req.file.filename}`
       : existing.gambar_cover;
@@ -176,12 +178,14 @@ const updateBerita = async (req, res) => {
       status: status || existing.status,
     });
 
+    logger.info('Berita diperbarui', { id, judul: judul || existing.judul });
+
     res.status(200).json({
       success: true,
       message: 'Berita berhasil diperbarui.',
     });
   } catch (error) {
-    console.error('Update Berita Error:', error);
+    logger.error('Update Berita Error', { id: req.params.id, error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan saat memperbarui berita.',
@@ -192,7 +196,7 @@ const updateBerita = async (req, res) => {
 
 /**
  * DELETE /api/berita/:id (Admin only)
- * Delete a news article.
+ * Soft delete — data tidak dihapus permanen, hanya ditandai deleted_at.
  */
 const deleteBerita = async (req, res) => {
   try {
@@ -206,17 +210,53 @@ const deleteBerita = async (req, res) => {
       });
     }
 
-    await BeritaModel.delete(id);
+    await BeritaModel.softDelete(id);
+
+    logger.info('Berita di-soft-delete', { id, judul: existing.judul });
 
     res.status(200).json({
       success: true,
       message: 'Berita berhasil dihapus.',
     });
   } catch (error) {
-    console.error('Delete Berita Error:', error);
+    logger.error('Delete Berita Error', { id: req.params.id, error: error.message });
     res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan saat menghapus berita.',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * PUT /api/berita/restore/:id (Admin only)
+ * Restore soft-deleted article — kembalikan dari "sampah".
+ */
+const restoreBerita = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await BeritaModel.findDeletedById(id);
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: 'Berita yang dihapus tidak ditemukan.',
+      });
+    }
+
+    await BeritaModel.restore(id);
+
+    logger.info('Berita di-restore', { id, judul: deleted.judul });
+
+    res.status(200).json({
+      success: true,
+      message: 'Berita berhasil dikembalikan.',
+    });
+  } catch (error) {
+    logger.error('Restore Berita Error', { id: req.params.id, error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan saat mengembalikan berita.',
       error: error.message,
     });
   }
@@ -229,4 +269,5 @@ module.exports = {
   createBerita,
   updateBerita,
   deleteBerita,
+  restoreBerita,
 };

@@ -25,7 +25,10 @@ CREATE TABLE IF NOT EXISTS calon_siswa (
     asal_sekolah VARCHAR(255) NOT NULL,
     status_pendaftaran ENUM('belum_lengkap', 'menunggu_verifikasi', 'lulus', 'tidak_lulus') DEFAULT 'belum_lengkap',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    -- Index untuk pencarian nama dan asal sekolah
+    INDEX idx_nama_lengkap (nama_lengkap),
+    INDEX idx_status (status_pendaftaran)
 );
 
 -- Tabel Data Orang Tua / Wali
@@ -51,7 +54,7 @@ CREATE TABLE IF NOT EXISTS berkas_dokumen (
     FOREIGN KEY (calon_siswa_id) REFERENCES calon_siswa(id) ON DELETE CASCADE
 );
 
--- Tabel Berita / Pengumuman
+-- Tabel Berita / Pengumuman (dengan Soft Delete)
 CREATE TABLE IF NOT EXISTS berita (
     id INT AUTO_INCREMENT PRIMARY KEY,
     author_id INT NOT NULL,
@@ -62,5 +65,9 @@ CREATE TABLE IF NOT EXISTS berita (
     status ENUM('draft', 'published') DEFAULT 'draft',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+    -- Index untuk pencarian judul dan soft delete filter
+    INDEX idx_judul (judul),
+    INDEX idx_deleted_at (deleted_at)
 );

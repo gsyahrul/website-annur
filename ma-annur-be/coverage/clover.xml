@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1780190272049" clover="3.2.0">
+  <project timestamp="1780190272050" name="All files">
+    <metrics statements="505" coveredstatements="340" conditionals="125" coveredconditionals="47" methods="64" coveredmethods="42" elements="694" coveredelements="429" complexity="0" loc="505" ncloc="505" packages="7" files="21" classes="21"/>
+    <package name="ma-annur-be">
+      <metrics statements="48" coveredstatements="34" conditionals="12" coveredconditionals="4" methods="6" coveredmethods="2"/>
+      <file name="app.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/app.js">
+        <metrics statements="48" coveredstatements="34" conditionals="12" coveredconditionals="4" methods="6" coveredmethods="2"/>
+        <line num="15" count="4" type="stmt"/>
+        <line num="17" count="4" type="stmt"/>
+        <line num="18" count="4" type="stmt"/>
+        <line num="19" count="4" type="stmt"/>
+        <line num="20" count="4" type="stmt"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="22" count="4" type="stmt"/>
+        <line num="23" count="4" type="stmt"/>
+        <line num="24" count="4" type="stmt"/>
+        <line num="26" count="4" type="stmt"/>
+        <line num="27" count="4" type="stmt"/>
+        <line num="28" count="4" type="stmt"/>
+        <line num="29" count="4" type="stmt"/>
+        <line num="31" count="4" type="stmt"/>
+        <line num="40" count="4" type="stmt"/>
+        <line num="47" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="49" count="8" type="stmt"/>
+        <line num="51" count="4" type="stmt"/>
+        <line num="53" count="40" type="cond" truecount="1" falsecount="1"/>
+        <line num="54" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="68" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="69" count="0" type="stmt"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="91" count="0" type="stmt"/>
+        <line num="92" count="0" type="stmt"/>
+        <line num="118" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="119" count="0" type="stmt"/>
+        <line num="125" count="4" type="stmt"/>
+        <line num="126" count="4" type="stmt"/>
+        <line num="129" count="4" type="stmt"/>
+        <line num="134" count="4" type="stmt"/>
+        <line num="142" count="4" type="stmt"/>
+        <line num="143" count="0" type="stmt"/>
+        <line num="144" count="0" type="stmt"/>
+        <line num="150" count="4" type="stmt"/>
+        <line num="151" count="4" type="stmt"/>
+        <line num="152" count="4" type="stmt"/>
+        <line num="153" count="4" type="stmt"/>
+        <line num="159" count="4" type="stmt"/>
+        <line num="160" count="0" type="stmt"/>
+        <line num="168" count="4" type="stmt"/>
+        <line num="169" count="0" type="stmt"/>
+        <line num="172" count="4" type="stmt"/>
+        <line num="173" count="0" type="stmt"/>
+        <line num="174" count="0" type="stmt"/>
+        <line num="181" count="4" type="stmt"/>
+      </file>
+    </package>
+    <package name="ma-annur-be.config">
+      <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="swagger.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/config/swagger.js">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="210" count="4" type="stmt"/>
+        <line num="212" count="4" type="stmt"/>
+      </file>
+    </package>
+    <package name="ma-annur-be.controllers">
+      <metrics statements="268" coveredstatements="144" conditionals="88" coveredconditionals="31" methods="23" coveredmethods="16"/>
+      <file name="authController.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/controllers/authController.js">
+        <metrics statements="38" coveredstatements="31" conditionals="12" coveredconditionals="10" methods="3" coveredmethods="3"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="12" count="4" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="18" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="59" count="4" type="stmt"/>
+        <line num="60" count="3" type="stmt"/>
+        <line num="61" count="3" type="stmt"/>
+        <line num="64" count="3" type="stmt"/>
+        <line num="65" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="66" count="1" type="stmt"/>
+        <line num="73" count="2" type="stmt"/>
+        <line num="74" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="82" count="1" type="stmt"/>
+        <line num="88" count="1" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="105" count="0" type="stmt"/>
+        <line num="106" count="0" type="stmt"/>
+        <line num="118" count="4" type="stmt"/>
+        <line num="119" count="1" type="stmt"/>
+        <line num="120" count="1" type="stmt"/>
+        <line num="121" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="122" count="0" type="stmt"/>
+        <line num="128" count="1" type="stmt"/>
+        <line num="133" count="0" type="stmt"/>
+        <line num="134" count="0" type="stmt"/>
+        <line num="142" count="4" type="stmt"/>
+      </file>
+      <file name="beritaController.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/controllers/beritaController.js">
+        <metrics statements="70" coveredstatements="36" conditionals="36" coveredconditionals="8" methods="7" coveredmethods="5"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="20" count="4" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="22" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="23" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="34" count="0" type="stmt"/>
+        <line num="47" count="4" type="stmt"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="49" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="50" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="73" count="4" type="stmt"/>
+        <line num="74" count="2" type="stmt"/>
+        <line num="75" count="2" type="stmt"/>
+        <line num="76" count="2" type="stmt"/>
+        <line num="78" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="79" count="1" type="stmt"/>
+        <line num="85" count="1" type="stmt"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="91" count="0" type="stmt"/>
+        <line num="104" count="4" type="stmt"/>
+        <line num="105" count="1" type="stmt"/>
+        <line num="106" count="1" type="stmt"/>
+        <line num="107" count="1" type="stmt"/>
+        <line num="110" count="1" type="stmt"/>
+        <line num="113" count="1" type="stmt"/>
+        <line num="114" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="115" count="0" type="stmt"/>
+        <line num="119" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="121" count="1" type="stmt"/>
+        <line num="130" count="1" type="stmt"/>
+        <line num="136" count="0" type="stmt"/>
+        <line num="137" count="0" type="stmt"/>
+        <line num="150" count="4" type="stmt"/>
+        <line num="151" count="0" type="stmt"/>
+        <line num="152" count="0" type="stmt"/>
+        <line num="153" count="0" type="stmt"/>
+        <line num="155" count="0" type="stmt"/>
+        <line num="156" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="157" count="0" type="stmt"/>
+        <line num="164" count="0" type="stmt"/>
+        <line num="165" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="166" count="0" type="stmt"/>
+        <line num="167" count="0" type="stmt"/>
+        <line num="168" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="169" count="0" type="stmt"/>
+        <line num="174" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="178" count="0" type="stmt"/>
+        <line num="186" count="0" type="stmt"/>
+        <line num="191" count="0" type="stmt"/>
+        <line num="192" count="0" type="stmt"/>
+        <line num="204" count="4" type="stmt"/>
+        <line num="205" count="1" type="stmt"/>
+        <line num="206" count="1" type="stmt"/>
+        <line num="208" count="1" type="stmt"/>
+        <line num="209" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="210" count="0" type="stmt"/>
+        <line num="216" count="1" type="stmt"/>
+        <line num="218" count="1" type="stmt"/>
+        <line num="223" count="0" type="stmt"/>
+        <line num="224" count="0" type="stmt"/>
+        <line num="232" count="4" type="stmt"/>
+      </file>
+      <file name="dashboardController.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/controllers/dashboardController.js">
+        <metrics statements="14" coveredstatements="12" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="53" count="1" type="stmt"/>
+        <line num="78" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="87" count="4" type="stmt"/>
+      </file>
+      <file name="siswaController.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/controllers/siswaController.js">
+        <metrics statements="146" coveredstatements="65" conditionals="40" coveredconditionals="13" methods="12" coveredmethods="7"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="14" count="4" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="16" count="2" type="stmt"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="21" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="47" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="67" count="4" type="stmt"/>
+        <line num="68" count="0" type="stmt"/>
+        <line num="69" count="0" type="stmt"/>
+        <line num="70" count="0" type="stmt"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="74" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="75" count="0" type="stmt"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="95" count="0" type="stmt"/>
+        <line num="97" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="98" count="0" type="stmt"/>
+        <line num="104" count="0" type="stmt"/>
+        <line num="116" count="4" type="stmt"/>
+        <line num="117" count="2" type="stmt"/>
+        <line num="118" count="2" type="stmt"/>
+        <line num="120" count="2" type="stmt"/>
+        <line num="121" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="122" count="1" type="stmt"/>
+        <line num="128" count="1" type="stmt"/>
+        <line num="133" count="0" type="stmt"/>
+        <line num="134" count="0" type="stmt"/>
+        <line num="147" count="4" type="stmt"/>
+        <line num="148" count="1" type="stmt"/>
+        <line num="149" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="150" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="152" count="1" type="stmt"/>
+        <line num="154" count="1" type="stmt"/>
+        <line num="160" count="0" type="stmt"/>
+        <line num="161" count="0" type="stmt"/>
+        <line num="174" count="4" type="stmt"/>
+        <line num="175" count="1" type="stmt"/>
+        <line num="176" count="1" type="stmt"/>
+        <line num="177" count="1" type="stmt"/>
+        <line num="179" count="1" type="stmt"/>
+        <line num="180" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="181" count="0" type="stmt"/>
+        <line num="187" count="1" type="stmt"/>
+        <line num="189" count="1" type="stmt"/>
+        <line num="194" count="0" type="stmt"/>
+        <line num="195" count="0" type="stmt"/>
+        <line num="208" count="4" type="stmt"/>
+        <line num="209" count="2" type="stmt"/>
+        <line num="210" count="2" type="stmt"/>
+        <line num="212" count="2" type="stmt"/>
+        <line num="213" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="214" count="1" type="stmt"/>
+        <line num="220" count="1" type="stmt"/>
+        <line num="225" count="0" type="stmt"/>
+        <line num="226" count="0" type="stmt"/>
+        <line num="243" count="4" type="stmt"/>
+        <line num="244" count="2" type="stmt"/>
+        <line num="245" count="2" type="stmt"/>
+        <line num="246" count="2" type="stmt"/>
+        <line num="249" count="2" type="stmt"/>
+        <line num="250" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="251" count="1" type="stmt"/>
+        <line num="258" count="1" type="stmt"/>
+        <line num="259" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="260" count="0" type="stmt"/>
+        <line num="266" count="1" type="stmt"/>
+        <line num="276" count="1" type="stmt"/>
+        <line num="282" count="0" type="stmt"/>
+        <line num="283" count="0" type="stmt"/>
+        <line num="296" count="4" type="stmt"/>
+        <line num="297" count="0" type="stmt"/>
+        <line num="298" count="0" type="stmt"/>
+        <line num="299" count="0" type="stmt"/>
+        <line num="301" count="0" type="stmt"/>
+        <line num="302" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="303" count="0" type="stmt"/>
+        <line num="309" count="0" type="stmt"/>
+        <line num="310" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="311" count="0" type="stmt"/>
+        <line num="317" count="0" type="stmt"/>
+        <line num="326" count="0" type="stmt"/>
+        <line num="331" count="0" type="stmt"/>
+        <line num="332" count="0" type="stmt"/>
+        <line num="344" count="4" type="stmt"/>
+        <line num="345" count="0" type="stmt"/>
+        <line num="346" count="0" type="stmt"/>
+        <line num="348" count="0" type="stmt"/>
+        <line num="349" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="350" count="0" type="stmt"/>
+        <line num="356" count="0" type="stmt"/>
+        <line num="357" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="358" count="0" type="stmt"/>
+        <line num="364" count="0" type="stmt"/>
+        <line num="369" count="0" type="stmt"/>
+        <line num="370" count="0" type="stmt"/>
+        <line num="387" count="4" type="stmt"/>
+        <line num="388" count="0" type="stmt"/>
+        <line num="389" count="0" type="stmt"/>
+        <line num="390" count="0" type="stmt"/>
+        <line num="393" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="394" count="0" type="stmt"/>
+        <line num="401" count="0" type="stmt"/>
+        <line num="402" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="403" count="0" type="stmt"/>
+        <line num="409" count="0" type="stmt"/>
+        <line num="412" count="0" type="stmt"/>
+        <line num="413" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="414" count="0" type="stmt"/>
+        <line num="415" count="0" type="stmt"/>
+        <line num="422" count="0" type="stmt"/>
+        <line num="428" count="0" type="stmt"/>
+        <line num="437" count="0" type="stmt"/>
+        <line num="438" count="0" type="stmt"/>
+        <line num="450" count="4" type="stmt"/>
+        <line num="451" count="0" type="stmt"/>
+        <line num="452" count="0" type="stmt"/>
+        <line num="454" count="0" type="stmt"/>
+        <line num="455" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="456" count="0" type="stmt"/>
+        <line num="462" count="0" type="stmt"/>
+        <line num="464" count="0" type="stmt"/>
+        <line num="469" count="0" type="stmt"/>
+        <line num="470" count="0" type="stmt"/>
+        <line num="483" count="4" type="stmt"/>
+        <line num="484" count="1" type="stmt"/>
+        <line num="485" count="1" type="stmt"/>
+        <line num="486" count="1" type="stmt"/>
+        <line num="488" count="1" type="stmt"/>
+        <line num="489" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="490" count="0" type="stmt"/>
+        <line num="496" count="1" type="stmt"/>
+        <line num="498" count="1" type="stmt"/>
+        <line num="503" count="0" type="stmt"/>
+        <line num="504" count="0" type="stmt"/>
+        <line num="512" count="4" type="stmt"/>
+      </file>
+    </package>
+    <package name="ma-annur-be.middlewares">
+      <metrics statements="39" coveredstatements="31" conditionals="12" coveredconditionals="10" methods="8" coveredmethods="5"/>
+      <file name="auth.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/middlewares/auth.js">
+        <metrics statements="17" coveredstatements="17" conditionals="8" coveredconditionals="8" methods="3" coveredmethods="3"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="7" count="4" type="stmt"/>
+        <line num="8" count="25" type="stmt"/>
+        <line num="10" count="25" type="cond" truecount="4" falsecount="0"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="17" count="23" type="stmt"/>
+        <line num="19" count="23" type="stmt"/>
+        <line num="20" count="23" type="stmt"/>
+        <line num="21" count="22" type="stmt"/>
+        <line num="22" count="22" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="35" count="4" type="stmt"/>
+        <line num="36" count="32" type="stmt"/>
+        <line num="37" count="11" type="cond" truecount="4" falsecount="0"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="43" count="9" type="stmt"/>
+        <line num="47" count="4" type="stmt"/>
+      </file>
+      <file name="upload.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/middlewares/upload.js">
+        <metrics statements="14" coveredstatements="6" conditionals="2" coveredconditionals="0" methods="3" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="17" count="4" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="25" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="32" count="4" type="stmt"/>
+        <line num="40" count="4" type="stmt"/>
+      </file>
+      <file name="validate.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/middlewares/validate.js">
+        <metrics statements="8" coveredstatements="8" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
+        <line num="9" count="26" type="stmt"/>
+        <line num="11" count="26" type="cond" truecount="2" falsecount="0"/>
+        <line num="12" count="17" type="stmt"/>
+        <line num="17" count="12" type="stmt"/>
+        <line num="24" count="14" type="stmt"/>
+        <line num="27" count="4" type="stmt"/>
+      </file>
+    </package>
+    <package name="ma-annur-be.models">
+      <metrics statements="76" coveredstatements="57" conditionals="11" coveredconditionals="0" methods="26" coveredmethods="18"/>
+      <file name="beritaModel.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/models/beritaModel.js">
+        <metrics statements="23" coveredstatements="16" conditionals="7" coveredconditionals="0" methods="7" coveredmethods="5"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="70" count="3" type="stmt"/>
+        <line num="77" count="3" type="stmt"/>
+        <line num="81" count="1" type="stmt"/>
+        <line num="82" count="1" type="stmt"/>
+        <line num="86" count="1" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="94" count="0" type="stmt"/>
+        <line num="98" count="0" type="stmt"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="103" count="1" type="stmt"/>
+        <line num="107" count="4" type="stmt"/>
+      </file>
+      <file name="berkasModel.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/models/berkasModel.js">
+        <metrics statements="15" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="6" coveredmethods="2"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="5" count="0" type="stmt"/>
+        <line num="9" count="0" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="34" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="50" count="4" type="stmt"/>
+      </file>
+      <file name="calonSiswaModel.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/models/calonSiswaModel.js">
+        <metrics statements="20" coveredstatements="18" conditionals="3" coveredconditionals="0" methods="7" coveredmethods="6"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="5" count="6" type="stmt"/>
+        <line num="6" count="6" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="60" count="1" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
+        <line num="70" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="80" count="1" type="stmt"/>
+        <line num="84" count="1" type="stmt"/>
+        <line num="88" count="4" type="stmt"/>
+      </file>
+      <file name="orangTuaModel.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/models/orangTuaModel.js">
+        <metrics statements="9" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="2"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="33" count="4" type="stmt"/>
+      </file>
+      <file name="userModel.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/models/userModel.js">
+        <metrics statements="9" coveredstatements="9" conditionals="1" coveredconditionals="0" methods="3" coveredmethods="3"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="5" count="5" type="stmt"/>
+        <line num="6" count="5" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="23" count="4" type="stmt"/>
+      </file>
+    </package>
+    <package name="ma-annur-be.routes">
+      <metrics statements="51" coveredstatements="51" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="authRoutes.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/routes/authRoutes.js">
+        <metrics statements="10" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="59" count="4" type="stmt"/>
+        <line num="85" count="4" type="stmt"/>
+        <line num="123" count="4" type="stmt"/>
+        <line num="125" count="4" type="stmt"/>
+      </file>
+      <file name="beritaRoutes.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/routes/beritaRoutes.js">
+        <metrics statements="14" coveredstatements="14" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="14" count="4" type="stmt"/>
+        <line num="60" count="4" type="stmt"/>
+        <line num="91" count="4" type="stmt"/>
+        <line num="134" count="4" type="stmt"/>
+        <line num="193" count="4" type="stmt"/>
+        <line num="254" count="4" type="stmt"/>
+        <line num="255" count="4" type="stmt"/>
+        <line num="257" count="4" type="stmt"/>
+      </file>
+      <file name="dashboardRoutes.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/routes/dashboardRoutes.js">
+        <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="45" count="4" type="stmt"/>
+        <line num="47" count="4" type="stmt"/>
+      </file>
+      <file name="siswaRoutes.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/routes/siswaRoutes.js">
+        <metrics statements="21" coveredstatements="21" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="5" count="4" type="stmt"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="27" count="4" type="stmt"/>
+        <line num="82" count="4" type="stmt"/>
+        <line num="85" count="4" type="stmt"/>
+        <line num="150" count="4" type="stmt"/>
+        <line num="151" count="4" type="stmt"/>
+        <line num="152" count="4" type="stmt"/>
+        <line num="206" count="4" type="stmt"/>
+        <line num="207" count="4" type="stmt"/>
+        <line num="208" count="4" type="stmt"/>
+        <line num="244" count="4" type="stmt"/>
+        <line num="282" count="4" type="stmt"/>
+        <line num="325" count="4" type="stmt"/>
+        <line num="362" count="4" type="stmt"/>
+        <line num="399" count="4" type="stmt"/>
+        <line num="401" count="4" type="stmt"/>
+      </file>
+    </package>
+    <package name="ma-annur-be.validators">
+      <metrics statements="19" coveredstatements="19" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+      <file name="authValidator.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/validators/authValidator.js">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="26" count="4" type="stmt"/>
+        <line num="37" count="4" type="stmt"/>
+      </file>
+      <file name="beritaValidator.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/validators/beritaValidator.js">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="26" count="4" type="stmt"/>
+        <line num="46" count="4" type="stmt"/>
+      </file>
+      <file name="siswaValidator.js" path="/home/guna1/Documents/Skripsi/WebsiteV2/ma-annur-be/validators/siswaValidator.js">
+        <metrics statements="11" coveredstatements="11" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="28" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="29" count="1" type="stmt"/>
+        <line num="31" count="4" type="stmt"/>
+        <line num="48" count="4" type="stmt"/>
+        <line num="85" count="4" type="stmt"/>
+        <line num="95" count="4" type="stmt"/>
+        <line num="108" count="4" type="stmt"/>
+        <line num="121" count="4" type="stmt"/>
+        <line num="126" count="4" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
