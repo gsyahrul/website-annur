@@ -1,0 +1,178 @@
+/* ===== LOGIN MODAL ===== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+    padding: var(--space-lg);
+}
+
+.modal-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 440px;
+    padding: var(--space-3xl);
+    box-shadow: var(--shadow-xl);
+    animation: fadeInUp 0.4s ease;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    background: var(--gray-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.modal-logo {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--sage-500), var(--emerald-600));
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: var(--white);
+    margin: 0 auto var(--space-md);
+}
+
+.modal-header h3 {
+    font-size: 1.4rem;
+    color: var(--sage-800);
+    margin-bottom: 4px;
+}
+
+.modal-header p {
+    color: var(--gray-400);
+    font-size: 0.9rem;
+}
+
+/* Role Tabs */
+.role-tabs {
+    display: flex;
+    background: var(--gray-100);
+    border-radius: var(--radius-full);
+    padding: 4px;
+    margin-bottom: var(--space-xl);
+}
+
+.role-tab {
+    flex: 1;
+    padding: 10px 8px;
+    background: none;
+    border-radius: var(--radius-full);
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    transition: all var(--transition-base);
+}
+
+.role-tab.active {
+    background: var(--white);
+    color: var(--sage-700);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+}
+
+/* Form */
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--gray-600);
+}
+
+.form-input {
+    padding: 12px 16px;
+    background: var(--gray-50);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-family: var(--font-body);
+    color: var(--gray-700);
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.form-input:focus {
+    border-color: var(--sage-400);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(90, 143, 90, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--gray-400);
+}
+
+.modal-submit {
+    padding: 14px;
+    background: linear-gradient(135deg, var(--sage-500), var(--emerald-600));
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    box-shadow: 0 4px 15px rgba(90, 143, 90, 0.3);
+    margin-top: var(--space-sm);
+}
+
+.modal-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(90, 143, 90, 0.4);
+}
+
+.modal-footer {
+    text-align: center;
+    margin-top: var(--space-lg);
+    color: var(--gray-400);
+    font-size: 0.85rem;
+}
+
+.modal-footer a {
+    color: var(--sage-600);
+    font-weight: 500;
+}
+
+.modal-footer a:hover {
+    text-decoration: underline;
+}

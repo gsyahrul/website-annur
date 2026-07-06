@@ -1,0 +1,179 @@
+/* ===== PRINCIPAL MESSAGE ===== */
+.principal {
+    background: var(--gray-50);
+}
+
+.principal-content {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: var(--space-3xl);
+    align-items: center;
+    margin-bottom: var(--space-4xl);
+}
+
+.principal-image {
+    position: relative;
+}
+
+.principal-image img {
+    width: 100%;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+}
+
+.principal-image::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    right: 12px;
+    bottom: 12px;
+    border: 3px solid var(--emerald-300);
+    border-radius: var(--radius-xl);
+    z-index: 0;
+}
+
+.principal-image img {
+    position: relative;
+    z-index: 1;
+}
+
+.principal-text {
+    animation: fadeInUp 0.7s ease;
+}
+
+.principal-quote {
+    position: relative;
+    padding-left: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.principal-quote::before {
+    content: '\201C';
+    position: absolute;
+    left: -8px;
+    top: -20px;
+    font-size: 5rem;
+    color: var(--emerald-300);
+    font-family: var(--font-heading);
+    line-height: 1;
+    opacity: 0.6;
+}
+
+.principal-quote p {
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--gray-600);
+    line-height: 1.9;
+}
+
+.principal-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--sage-700);
+}
+
+.principal-title {
+    color: var(--gray-500);
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
+
+/* Visi Misi Cards */
+.visi-misi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+}
+
+.vm-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.vm-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--sage-400), var(--emerald-400));
+}
+
+.vm-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-xl);
+}
+
+.vm-card-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--sage-100), var(--emerald-100));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--sage-600);
+    margin-bottom: var(--space-lg);
+}
+
+.vm-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-md);
+    color: var(--sage-700);
+}
+
+.vm-card p,
+.vm-card ul {
+    color: var(--gray-500);
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+
+.vm-card ul {
+    padding-left: var(--space-md);
+}
+
+.vm-card ul li {
+    position: relative;
+    padding-left: var(--space-lg);
+    margin-bottom: var(--space-sm);
+}
+
+.vm-card ul li::before {
+    content: '✦';
+    position: absolute;
+    left: 0;
+    color: var(--emerald-400);
+    font-size: 0.7rem;
+    top: 4px;
+}
+
+@media (max-width: 768px) {
+    .principal-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .principal-image {
+        max-width: 280px;
+        margin: 0 auto;
+    }
+
+    .principal-quote {
+        padding-left: var(--space-lg);
+        text-align: left;
+    }
+
+    .visi-misi-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,193 @@
+/* ===== NAVBAR ===== */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 16px 0;
+    transition: all var(--transition-base);
+}
+
+.navbar.scrolled {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    padding: 10px 0;
+}
+
+.navbar .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--white);
+    transition: color var(--transition-base);
+}
+
+.navbar.scrolled .navbar-logo {
+    color: var(--sage-700);
+}
+
+.navbar-logo .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--emerald-400), var(--sage-600));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--white);
+    font-weight: 800;
+}
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+}
+
+.navbar-links a {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+    position: relative;
+    padding: 4px 0;
+    transition: all var(--transition-fast);
+}
+
+.navbar.scrolled .navbar-links a {
+    color: var(--gray-600);
+}
+
+.navbar-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--emerald-400);
+    transition: width var(--transition-base);
+    border-radius: var(--radius-full);
+}
+
+.navbar-links a:hover::after,
+.navbar-links a.active::after {
+    width: 100%;
+}
+
+.navbar-links a:hover {
+    color: var(--white);
+}
+
+.navbar.scrolled .navbar-links a:hover {
+    color: var(--sage-600);
+}
+
+.navbar-login-btn {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, var(--sage-500), var(--emerald-600));
+    color: var(--white) !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+    box-shadow: 0 4px 12px rgba(90, 143, 90, 0.3);
+}
+
+.navbar-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(90, 143, 90, 0.4);
+}
+
+.navbar-login-btn::after {
+    display: none !important;
+}
+
+.navbar-ppdb-link {
+    font-weight: 600 !important;
+    color: var(--emerald-300) !important;
+}
+
+.navbar.scrolled .navbar-ppdb-link {
+    color: var(--sage-600) !important;
+}
+
+/* Hamburger */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    padding: 4px;
+}
+
+.hamburger span {
+    display: block;
+    width: 26px;
+    height: 3px;
+    background: var(--white);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+}
+
+.navbar.scrolled .hamburger span {
+    background: var(--sage-700);
+}
+
+.hamburger.open span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 6px);
+}
+
+.hamburger.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -6px);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+
+    .navbar-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 280px;
+        height: 100vh;
+        flex-direction: column;
+        background: var(--white);
+        padding: 80px var(--space-xl) var(--space-xl);
+        gap: var(--space-lg);
+        box-shadow: var(--shadow-xl);
+        transition: right var(--transition-base);
+    }
+
+    .navbar-links.open {
+        right: 0;
+    }
+
+    .navbar-links a {
+        color: var(--gray-700) !important;
+        font-size: 1.05rem;
+    }
+
+    .navbar-links a:hover {
+        color: var(--sage-600) !important;
+    }
+}
