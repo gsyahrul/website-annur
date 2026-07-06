@@ -1,7 +1,7 @@
 # Dokumentasi Backend — Sistem PPDB Madrasah Aliyah Annur
 
 > REST API untuk Penerimaan Peserta Didik Baru (PPDB)
-> Versi: 1.0.0
+> Versi: 2.0.0 — Terintegrasi dengan Frontend
 
 ---
 
@@ -40,7 +40,10 @@
 │  │  /api/auth/*        → authValidator        → UserModel   │   │
 │  │  /api/siswa/*       → siswaValidator       → SiswaModel  │   │
 │  │  /api/berita/*      → beritaValidator      → BeritaModel │   │
+│  │  /api/galeri/*      → (admin guard)        → GaleriModel │   │
+│  │  /api/buku/*        → (admin guard)        → BukuModel   │   │
 │  │  /api/dashboard/*   → (admin guard)        → (aggregasi) │   │
+│  │  /api/files         → multer upload        → (disk)      │   │
 │  └──────────────────────────────────────────────────────────┘   │
 └───────────────────────────────┬─────────────────────────────────┘
                                 │ SQL Query
@@ -99,7 +102,16 @@ Menyimpan biodata lengkap calon peserta didik baru.
 | `tanggal_lahir` | DATE | NOT NULL | Tanggal lahir |
 | `jenis_kelamin` | ENUM('L', 'P') | NOT NULL | Laki-laki / Perempuan |
 | `asal_sekolah` | VARCHAR(255) | NOT NULL | Sekolah asal (SMP/MTs) |
-| `status_pendaftaran` | ENUM('belum_lengkap', 'menunggu_verifikasi', 'lulus', 'tidak_lulus') | DEFAULT 'belum_lengkap' | Status proses pendaftaran |
+| `jurusan` | VARCHAR(50) | — | Jurusan pilihan (IPA/IPS/Keagamaan) |
+| `no_hp` | VARCHAR(20) | — | No. HP / WhatsApp |
+| `alamat` | TEXT | — | Alamat lengkap |
+| `kode_unik` | INT | — | Kode unik pembayaran (3 digit) |
+| `nominal_pembayaran` | INT | — | Nominal total pembayaran (150000 + kode_unik) |
+| `jadwal_tes_tanggal` | DATE | — | Tanggal tes masuk (diisi admin) |
+| `jadwal_tes_waktu` | VARCHAR(10) | — | Waktu tes masuk |
+| `jadwal_tes_lokasi` | VARCHAR(255) | — | Lokasi tes masuk |
+| `hasil_seleksi` | ENUM('lulus', 'tidak_lulus') | — | Hasil seleksi final |
+| `status_pendaftaran` | ENUM('belum_lengkap', 'menunggu_verifikasi', 'terverifikasi', 'lulus', 'tidak_lulus') | DEFAULT 'belum_lengkap' | Status proses pendaftaran |
 | `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Waktu pendaftaran |
 
 **Index:** `idx_nama_lengkap` (pencarian nama), `idx_status` (filter status)
@@ -163,6 +175,36 @@ Menyimpan artikel berita/pengumuman sekolah dengan dukungan **soft delete**.
 **Relasi:** `author_id` → `users.id` (ON DELETE CASCADE)
 
 ---
+
+### 3.6 Tabel `galeri` — Galeri Foto & Video
+
+Menyimpan dokumentasi foto dan video kegiatan sekolah.
+
+| Kolom | Tipe Data | Constraint | Penjelasan |
+|-------|-----------|------------|------------|
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | ID unik |
+| `title` | VARCHAR(255) | NOT NULL | Judul foto/video |
+| `description` | TEXT | — | Deskripsi singkat |
+| `image` | VARCHAR(255) | — | Path file gambar |
+| `type` | ENUM('photo', 'video') | DEFAULT 'photo' | Tipe konten |
+| `status` | ENUM('draft', 'published') | DEFAULT 'published' | Status publikasi |
+| `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Waktu dibuat |
+
+---
+
+### 3.7 Tabel `buku` — Perpustakaan Digital
+
+Menyimpan koleksi buku perpustakaan digital (Ruang Baca).
+
+| Kolom | Tipe Data | Constraint | Penjelasan |
+|-------|-----------|------------|------------|
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | ID unik |
+| `title` | VARCHAR(255) | NOT NULL | Judul buku |
+| `author` | VARCHAR(255) | NOT NULL | Penulis / penerbit |
+| `category` | VARCHAR(50) | NOT NULL | Kategori (kelas-x, kelas-xi, kelas-xii, hiburan, sejarah, referensi) |
+| `badge` | VARCHAR(50) | — | Label badge (Kurikulum, IPA, IPS, dll) |
+| `color` | VARCHAR(20) | DEFAULT '#4a7a4a' | Warna cover buku |
+| `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Waktu dibuat |
 
 ### Diagram Relasi Antar Tabel (ERD)
 
@@ -380,7 +422,9 @@ ma-annur-be/
 ├── controllers/                # Business Logic
 │   ├── authController.js       # Login, register, profil
 │   ├── beritaController.js     # CRUD berita + soft delete + restore
+│   ├── bukuController.js       # CRUD perpustakaan digital
 │   ├── dashboardController.js  # Statistik agregasi admin
+│   ├── galeriController.js     # CRUD galeri foto/video
 │   └── siswaController.js      # PPDB, biodata, orang tua, dokumen
 │
 ├── middlewares/                # Middleware
@@ -391,14 +435,18 @@ ma-annur-be/
 ├── models/                     # Data Access Layer (SQL queries)
 │   ├── beritaModel.js          # Query berita + search + soft delete
 │   ├── berkasModel.js          # Query berkas dokumen
+│   ├── bukuModel.js            # Query buku perpustakaan
 │   ├── calonSiswaModel.js      # Query calon siswa + search + filter
+│   ├── galeriModel.js          # Query galeri foto/video
 │   ├── orangTuaModel.js        # Query data orang tua
 │   └── userModel.js            # Query user (auth)
 │
 ├── routes/                     # Route Definitions + Swagger JSDoc
 │   ├── authRoutes.js           # /api/auth/*
 │   ├── beritaRoutes.js         # /api/berita/*
+│   ├── bukuRoutes.js           # /api/buku/*
 │   ├── dashboardRoutes.js      # /api/dashboard/*
+│   ├── galeriRoutes.js         # /api/galeri/*
 │   └── siswaRoutes.js          # /api/siswa/*
 │
 ├── validators/                 # Input Validation Rules

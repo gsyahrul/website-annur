@@ -62,37 +62,6 @@ router.get('/', getPublishedBerita);
 
 /**
  * @swagger
- * /api/berita/{slug}:
- *   get:
- *     summary: Ambil detail berita berdasarkan slug (publik)
- *     tags: [Berita]
- *     parameters:
- *       - in: path
- *         name: slug
- *         required: true
- *         schema:
- *           type: string
- *         description: Slug berita
- *         example: pengumuman-ppdb-2026
- *     responses:
- *       200:
- *         description: Detail berita
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   $ref: '#/components/schemas/BeritaResponse'
- *       404:
- *         description: Berita tidak ditemukan
- */
-router.get('/:slug', getBeritaBySlug);
-
-/**
- * @swagger
  * /api/berita/admin/all:
  *   get:
  *     summary: Ambil semua berita termasuk draft (Admin only)
@@ -133,6 +102,37 @@ router.get('/:slug', getBeritaBySlug);
  *         description: Tidak memiliki izin
  */
 router.get('/admin/all', verifyToken, authorizeRoles('admin'), getAllBerita);
+
+/**
+ * @swagger
+ * /api/berita/{slug}:
+ *   get:
+ *     summary: Ambil detail berita berdasarkan slug (publik)
+ *     tags: [Berita]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Slug berita
+ *         example: pengumuman-ppdb-2026
+ *     responses:
+ *       200:
+ *         description: Detail berita
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/BeritaResponse'
+ *       404:
+ *         description: Berita tidak ditemukan
+ */
+router.get('/:slug', getBeritaBySlug);
 
 /**
  * @swagger

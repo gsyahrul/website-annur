@@ -13,6 +13,7 @@ const getStatistics = async (req, res) => {
          COUNT(*) AS total_pendaftar,
          SUM(CASE WHEN status_pendaftaran = 'belum_lengkap' THEN 1 ELSE 0 END) AS belum_lengkap,
          SUM(CASE WHEN status_pendaftaran = 'menunggu_verifikasi' THEN 1 ELSE 0 END) AS menunggu_verifikasi,
+         SUM(CASE WHEN status_pendaftaran = 'terverifikasi' THEN 1 ELSE 0 END) AS terverifikasi,
          SUM(CASE WHEN status_pendaftaran = 'lulus' THEN 1 ELSE 0 END) AS lulus,
          SUM(CASE WHEN status_pendaftaran = 'tidak_lulus' THEN 1 ELSE 0 END) AS tidak_lulus
        FROM calon_siswa`
@@ -34,12 +35,23 @@ const getStatistics = async (req, res) => {
          COUNT(*) AS total_berita,
          SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) AS published,
          SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) AS draft
-       FROM berita`
+       FROM berita WHERE deleted_at IS NULL`
     );
 
-    // 4. 5 pendaftar terbaru
+    // 4. Total galeri
+    const [galeriRows] = await pool.query(
+      `SELECT COUNT(*) AS total_galeri FROM galeri`
+    );
+
+    // 5. Total buku
+    const [bukuRows] = await pool.query(
+      `SELECT COUNT(*) AS total_buku FROM buku`
+    );
+
+    // 6. 5 pendaftar terbaru
     const [recentRows] = await pool.query(
-      `SELECT cs.id, cs.nisn, cs.nama_lengkap, cs.asal_sekolah, cs.status_pendaftaran, cs.created_at, u.email
+      `SELECT cs.id, cs.nisn, cs.nama_lengkap, cs.asal_sekolah, cs.status_pendaftaran, 
+              cs.kode_unik, cs.nominal_pembayaran, cs.created_at, u.email
        FROM calon_siswa cs
        JOIN users u ON cs.user_id = u.id
        ORDER BY cs.created_at DESC
@@ -54,9 +66,15 @@ const getStatistics = async (req, res) => {
       success: true,
       data: {
         total_pendaftar: stats.total_pendaftar,
+        beritaCount: berita.total_berita,
+        galeriCount: galeriRows[0].total_galeri,
+        bukuCount: bukuRows[0].total_buku,
+        ppdbCount: stats.total_pendaftar,
+        ppdbPendingCount: stats.menunggu_verifikasi,
         status_breakdown: {
           belum_lengkap: stats.belum_lengkap,
           menunggu_verifikasi: stats.menunggu_verifikasi,
+          terverifikasi: stats.terverifikasi,
           lulus: stats.lulus,
           tidak_lulus: stats.tidak_lulus,
         },
@@ -85,3 +103,4 @@ const getStatistics = async (req, res) => {
 };
 
 module.exports = { getStatistics };
+

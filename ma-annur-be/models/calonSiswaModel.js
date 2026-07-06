@@ -13,11 +13,15 @@ const CalonSiswaModel = {
 
   /**
    * Find student by NISN (public lookup).
-   * Returns limited fields — no sensitive data exposed.
+   * Returns all relevant fields for status check and kartu peserta.
    */
   async findByNisn(nisn) {
     const [rows] = await pool.query(
-      `SELECT cs.nisn, cs.nama_lengkap, cs.asal_sekolah, cs.status_pendaftaran, cs.created_at
+      `SELECT cs.id, cs.nisn, cs.nama_lengkap, cs.tempat_lahir, cs.tanggal_lahir,
+              cs.jenis_kelamin, cs.asal_sekolah, cs.jurusan, cs.no_hp,
+              cs.kode_unik, cs.nominal_pembayaran,
+              cs.jadwal_tes_tanggal, cs.jadwal_tes_waktu, cs.jadwal_tes_lokasi,
+              cs.hasil_seleksi, cs.status_pendaftaran, cs.created_at
        FROM calon_siswa cs
        WHERE cs.nisn = ?`,
       [nisn]
@@ -83,22 +87,26 @@ const CalonSiswaModel = {
     };
   },
 
-  async create({ user_id, nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah }) {
+  async create({ user_id, nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah, jurusan, no_hp, alamat }) {
+    // Generate kode_unik (3-digit random) dan nominal_pembayaran
+    const kode_unik = Math.floor(100 + Math.random() * 900);
+    const nominal_pembayaran = 150000 + kode_unik;
+
     const [result] = await pool.query(
       `INSERT INTO calon_siswa 
-       (user_id, nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [user_id, nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah]
+       (user_id, nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah, jurusan, no_hp, alamat, kode_unik, nominal_pembayaran) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [user_id, nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah, jurusan || null, no_hp || null, alamat || null, kode_unik, nominal_pembayaran]
     );
-    return { id: result.insertId };
+    return { id: result.insertId, kode_unik, nominal_pembayaran };
   },
 
-  async update(userId, { nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah }) {
+  async update(userId, { nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah, jurusan, no_hp, alamat }) {
     const [result] = await pool.query(
       `UPDATE calon_siswa 
-       SET nisn = ?, nama_lengkap = ?, tempat_lahir = ?, tanggal_lahir = ?, jenis_kelamin = ?, asal_sekolah = ?
+       SET nisn = ?, nama_lengkap = ?, tempat_lahir = ?, tanggal_lahir = ?, jenis_kelamin = ?, asal_sekolah = ?, jurusan = ?, no_hp = ?, alamat = ?
        WHERE user_id = ?`,
-      [nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah, userId]
+      [nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah, jurusan || null, no_hp || null, alamat || null, userId]
     );
     return result;
   },
@@ -107,6 +115,31 @@ const CalonSiswaModel = {
     const [result] = await pool.query(
       'UPDATE calon_siswa SET status_pendaftaran = ? WHERE id = ?',
       [status_pendaftaran, id]
+    );
+    return result;
+  },
+
+  /**
+   * Update jadwal tes and verification data (Admin).
+   */
+  async updateVerification(id, { status_pendaftaran, jadwal_tes_tanggal, jadwal_tes_waktu, jadwal_tes_lokasi }) {
+    const [result] = await pool.query(
+      `UPDATE calon_siswa 
+       SET status_pendaftaran = ?, jadwal_tes_tanggal = ?, jadwal_tes_waktu = ?, jadwal_tes_lokasi = ?
+       WHERE id = ?`,
+      [status_pendaftaran, jadwal_tes_tanggal || null, jadwal_tes_waktu || null, jadwal_tes_lokasi || null, id]
+    );
+    return result;
+  },
+
+  /**
+   * Update hasil seleksi (Admin).
+   */
+  async updateHasilSeleksi(id, hasil_seleksi) {
+    const statusMap = { lulus: 'lulus', tidak_lulus: 'tidak_lulus' };
+    const [result] = await pool.query(
+      'UPDATE calon_siswa SET hasil_seleksi = ?, status_pendaftaran = ? WHERE id = ?',
+      [hasil_seleksi, statusMap[hasil_seleksi] || 'menunggu_verifikasi', id]
     );
     return result;
   },

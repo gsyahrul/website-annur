@@ -27,6 +27,9 @@ const authRoutes = require('./routes/authRoutes');
 const siswaRoutes = require('./routes/siswaRoutes');
 const beritaRoutes = require('./routes/beritaRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const galeriRoutes = require('./routes/galeriRoutes');
+const bukuRoutes = require('./routes/bukuRoutes');
+const upload = require('./middlewares/upload');
 
 const app = express();
 
@@ -151,6 +154,20 @@ app.use('/api/auth', authRoutes);
 app.use('/api/siswa', siswaRoutes);
 app.use('/api/berita', beritaRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/galeri', galeriRoutes);
+app.use('/api/buku', bukuRoutes);
+
+// Generic file upload endpoint (used by frontend for images)
+app.post('/api/files', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'File wajib diunggah.' });
+  }
+  const filePath = `/uploads/${req.file.filename}`;
+  res.status(201).json({
+    success: true,
+    data: { id: req.file.filename, filename_download: req.file.originalname, file_path: filePath },
+  });
+});
 
 // ============================================================
 // HEALTH CHECK & ERROR HANDLERS

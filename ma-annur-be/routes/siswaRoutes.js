@@ -24,6 +24,8 @@ const {
   uploadDokumen,
   getDokumen,
   validasiDokumen,
+  verifyRegistration,
+  updateHasilSeleksi,
 } = require('../controllers/siswaController');
 
 /**
@@ -397,5 +399,75 @@ router.put('/status/:id', authorizeRoles('admin'), updateStatusRules, validate, 
  *         description: Status validasi tidak valid
  */
 router.put('/validasi-dokumen/:id', authorizeRoles('admin'), validasiDokumenRules, validate, validasiDokumen);
+
+/**
+ * @swagger
+ * /api/siswa/verify/{id}:
+ *   put:
+ *     summary: Verifikasi pendaftaran dan atur jadwal tes (Admin only)
+ *     tags: [Siswa]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               jadwal_tes_tanggal:
+ *                 type: string
+ *                 format: date
+ *               jadwal_tes_waktu:
+ *                 type: string
+ *               jadwal_tes_lokasi:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Pendaftaran berhasil diverifikasi
+ *       404:
+ *         description: Calon siswa tidak ditemukan
+ */
+router.put('/verify/:id', authorizeRoles('admin'), verifyRegistration);
+
+/**
+ * @swagger
+ * /api/siswa/hasil-seleksi/{id}:
+ *   put:
+ *     summary: Update hasil seleksi (Admin only)
+ *     tags: [Siswa]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - hasil_seleksi
+ *             properties:
+ *               hasil_seleksi:
+ *                 type: string
+ *                 enum: [lulus, tidak_lulus]
+ *     responses:
+ *       200:
+ *         description: Hasil seleksi berhasil diperbarui
+ *       404:
+ *         description: Calon siswa tidak ditemukan
+ */
+router.put('/hasil-seleksi/:id', authorizeRoles('admin'), updateHasilSeleksi);
 
 module.exports = router;

@@ -23,7 +23,16 @@ CREATE TABLE IF NOT EXISTS calon_siswa (
     tanggal_lahir DATE NOT NULL,
     jenis_kelamin ENUM('L', 'P') NOT NULL,
     asal_sekolah VARCHAR(255) NOT NULL,
-    status_pendaftaran ENUM('belum_lengkap', 'menunggu_verifikasi', 'lulus', 'tidak_lulus') DEFAULT 'belum_lengkap',
+    jurusan VARCHAR(50),
+    no_hp VARCHAR(20),
+    alamat TEXT,
+    kode_unik INT,
+    nominal_pembayaran INT,
+    jadwal_tes_tanggal DATE,
+    jadwal_tes_waktu VARCHAR(10),
+    jadwal_tes_lokasi VARCHAR(255),
+    hasil_seleksi ENUM('lulus', 'tidak_lulus'),
+    status_pendaftaran ENUM('belum_lengkap', 'menunggu_verifikasi', 'terverifikasi', 'lulus', 'tidak_lulus') DEFAULT 'belum_lengkap',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     -- Index untuk pencarian nama dan asal sekolah
@@ -70,4 +79,26 @@ CREATE TABLE IF NOT EXISTS berita (
     -- Index untuk pencarian judul dan soft delete filter
     INDEX idx_judul (judul),
     INDEX idx_deleted_at (deleted_at)
+);
+
+-- Tabel Galeri
+CREATE TABLE IF NOT EXISTS galeri (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    image VARCHAR(255),
+    type ENUM('photo', 'video') DEFAULT 'photo',
+    status ENUM('draft', 'published') DEFAULT 'published',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabel Buku (Perpustakaan Digital)
+CREATE TABLE IF NOT EXISTS buku (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    badge VARCHAR(50),
+    color VARCHAR(20) DEFAULT '#4a7a4a',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

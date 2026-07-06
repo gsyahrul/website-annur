@@ -98,8 +98,8 @@ const updateStatusRules = [
 
   body('status_pendaftaran')
     .notEmpty().withMessage('Status pendaftaran wajib diisi.')
-    .isIn(['belum_lengkap', 'menunggu_verifikasi', 'lulus', 'tidak_lulus'])
-    .withMessage('Status tidak valid. Pilih: belum_lengkap, menunggu_verifikasi, lulus, tidak_lulus.'),
+    .isIn(['belum_lengkap', 'menunggu_verifikasi', 'terverifikasi', 'lulus', 'tidak_lulus'])
+    .withMessage('Status tidak valid. Pilih: belum_lengkap, menunggu_verifikasi, terverifikasi, lulus, tidak_lulus.'),
 ];
 
 /**

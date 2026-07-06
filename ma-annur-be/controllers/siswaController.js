@@ -15,7 +15,7 @@ const logger = require('../config/logger');
 const createBiodata = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah } = req.body;
+    const { nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah, jurusan, no_hp, alamat } = req.body;
 
     // Check if biodata already exists
     const existing = await CalonSiswaModel.findByUserId(userId);
@@ -34,12 +34,15 @@ const createBiodata = async (req, res) => {
       tanggal_lahir,
       jenis_kelamin,
       asal_sekolah,
+      jurusan,
+      no_hp,
+      alamat,
     });
 
     res.status(201).json({
       success: true,
       message: 'Biodata berhasil disimpan.',
-      data: { id: result.id },
+      data: { id: result.id, kode_unik: result.kode_unik, nominal_pembayaran: result.nominal_pembayaran },
     });
   } catch (error) {
     logger.error('Create Biodata Error', { error: error.message, userId });
@@ -68,7 +71,7 @@ const createBiodata = async (req, res) => {
 const updateBiodata = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah } = req.body;
+    const { nisn, nama_lengkap, tempat_lahir, tanggal_lahir, jenis_kelamin, asal_sekolah, jurusan, no_hp, alamat } = req.body;
 
     // Check if biodata exists
     const existing = await CalonSiswaModel.findByUserId(userId);
@@ -86,6 +89,9 @@ const updateBiodata = async (req, res) => {
       tanggal_lahir,
       jenis_kelamin,
       asal_sekolah,
+      jurusan,
+      no_hp,
+      alamat,
     });
 
     res.status(200).json({
@@ -512,6 +518,57 @@ const validasiDokumen = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/siswa/verify/:id (Admin only)
+ * Verify registration and set test schedule.
+ */
+const verifyRegistration = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { jadwal_tes_tanggal, jadwal_tes_waktu, jadwal_tes_lokasi } = req.body;
+
+    const siswa = await CalonSiswaModel.findById(id);
+    if (!siswa) {
+      return res.status(404).json({ success: false, message: 'Data calon siswa tidak ditemukan.' });
+    }
+
+    await CalonSiswaModel.updateVerification(id, {
+      status_pendaftaran: 'terverifikasi',
+      jadwal_tes_tanggal,
+      jadwal_tes_waktu,
+      jadwal_tes_lokasi,
+    });
+
+    res.status(200).json({ success: true, message: 'Pendaftaran berhasil diverifikasi dan jadwal tes telah diatur.' });
+  } catch (error) {
+    logger.error('Verify Registration Error', { id: req.params.id, error: error.message });
+    res.status(500).json({ success: false, message: 'Terjadi kesalahan.', error: error.message });
+  }
+};
+
+/**
+ * PUT /api/siswa/hasil-seleksi/:id (Admin only)
+ * Set final selection result.
+ */
+const updateHasilSeleksi = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { hasil_seleksi } = req.body;
+
+    const siswa = await CalonSiswaModel.findById(id);
+    if (!siswa) {
+      return res.status(404).json({ success: false, message: 'Data calon siswa tidak ditemukan.' });
+    }
+
+    await CalonSiswaModel.updateHasilSeleksi(id, hasil_seleksi);
+
+    res.status(200).json({ success: true, message: 'Hasil seleksi berhasil diperbarui.' });
+  } catch (error) {
+    logger.error('Update Hasil Seleksi Error', { id: req.params.id, error: error.message });
+    res.status(500).json({ success: false, message: 'Terjadi kesalahan.', error: error.message });
+  }
+};
+
 module.exports = {
   createBiodata,
   updateBiodata,
@@ -525,4 +582,6 @@ module.exports = {
   uploadDokumen,
   getDokumen,
   validasiDokumen,
+  verifyRegistration,
+  updateHasilSeleksi,
 };
