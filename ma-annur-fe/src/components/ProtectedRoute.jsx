@@ -1,8 +1,15 @@
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }) => {
-    const { isAdmin, loading } = useAuth();
+/**
+ * ProtectedRoute — guards routes based on authentication/role.
+ *
+ * Props:
+ *   requireAdmin (boolean) — if true, only admins can access.
+ *                             if false (default), any logged-in user can access.
+ */
+const ProtectedRoute = ({ children, requireAdmin = false }) => {
+    const { user, isAdmin, loading } = useAuth();
 
     if (loading) {
         return (
@@ -15,7 +22,12 @@ const ProtectedRoute = ({ children }) => {
         );
     }
 
-    if (!isAdmin) return <Navigate to="/" replace />;
+    // Not logged in at all
+    if (!user) return <Navigate to="/" replace />;
+
+    // Needs admin but user is not admin
+    if (requireAdmin && !isAdmin) return <Navigate to="/" replace />;
+
     return children;
 };
 

@@ -25,7 +25,12 @@ const LoginModal = ({ isOpen, onClose }) => {
                 onClose();
                 setEmail('');
                 setPassword('');
-                navigate('/admin');
+                // Only redirect to admin dashboard for admin users
+                // Calon siswa stays on current page
+                const currentUser = JSON.parse(atob(localStorage.getItem('auth_token')?.split('.')[1] || '{}'));
+                if (currentUser.role === 'admin') {
+                    navigate('/admin');
+                }
             } else {
                 setError(result.message);
             }

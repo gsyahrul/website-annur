@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FiCheckCircle, FiEye, FiX, FiCalendar, FiClock, FiSearch, FiFilter } from 'react-icons/fi';
-import { fetchPPDBRegistrations, verifyRegistration, updatePPDBStatus } from '../lib/directus';
+import { FiCheckCircle, FiEye, FiX, FiCalendar, FiClock, FiSearch, FiFilter, FiFile, FiDownload } from 'react-icons/fi';
+import { fetchPPDBRegistrations, verifyRegistration, updatePPDBStatus, getDokumenBySiswaId, validasiDokumen } from '../lib/directus';
 
 const VerifikasiManager = () => {
     const [registrants, setRegistrants] = useState([]);
@@ -11,6 +11,24 @@ const VerifikasiManager = () => {
     const [saving, setSaving] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
+    const [detailDocs, setDetailDocs] = useState([]);
+    const [docsLoading, setDocsLoading] = useState(false);
+    const [previewDoc, setPreviewDoc] = useState(null);
+
+    // Open detail modal and load documents
+    const openDetail = async (registrant) => {
+        setDetailModal(registrant);
+        setDetailDocs([]);
+        setDocsLoading(true);
+        try {
+            const docs = await getDokumenBySiswaId(registrant.id);
+            setDetailDocs(docs || []);
+        } catch {
+            setDetailDocs([]);
+        } finally {
+            setDocsLoading(false);
+        }
+    };
 
     const loadData = () => {
         setLoading(true);
@@ -201,7 +219,7 @@ const VerifikasiManager = () => {
                                         </td>
                                         <td>
                                             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                                <button className="btn-action blue" onClick={() => setDetailModal(r)}>
+                                                <button className="btn-action blue" onClick={() => openDetail(r)}>
                                                     <FiEye /> Detail
                                                 </button>
                                                 {r.status_pendaftaran === 'belum_lengkap' && (
@@ -288,6 +306,83 @@ const VerifikasiManager = () => {
                                     </div>
                                 )}
                             </div>
+                            {/* Dokumen Section */}
+                            <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--gray-50)', borderRadius: '10px' }}>
+                                <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--gray-600)', marginBottom: '8px' }}>📁 Dokumen Pendaftaran</p>
+                                {docsLoading ? (
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--gray-400)' }}>Memuat dokumen...</p>
+                                ) : (() => {
+                                    const requiredDocs = [
+                                        { key: 'kk', label: 'Kartu Keluarga (KK)' },
+                                        { key: 'akta_kelahiran', label: 'Akta Kelahiran' },
+                                        { key: 'skl', label: 'Surat Keterangan Lulus (SKL)' },
+                                        { key: 'pas_foto', label: 'Pas Foto 3×4' },
+                                    ];
+                                    const statusMap = {
+                                        pending: { label: '⏳ Pending', bg: '#fef3c7', color: '#92400e' },
+                                        valid: { label: '✅ Valid', bg: '#d1fae5', color: '#065f46' },
+                                        revisi: { label: '⚠️ Revisi', bg: '#fee2e2', color: '#991b1b' },
+                                    };
+                                    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                                    return (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            {requiredDocs.map(reqDoc => {
+                                                const doc = detailDocs.find(d => d.jenis_dokumen === reqDoc.key);
+                                                if (!doc) {
+                                                    return (
+                                                        <div key={reqDoc.key} style={{ display: 'flex', alignItems: 'center', padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#fff', border: '1px dashed var(--gray-300)' }}>
+                                                            <FiFile style={{ color: 'var(--gray-300)', marginRight: '0.5rem' }} />
+                                                            <div>
+                                                                <p style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--gray-400)' }}>{reqDoc.label}</p>
+                                                                <span style={{ fontSize: '0.7rem', color: 'var(--gray-400)', fontStyle: 'italic' }}>Belum diunggah</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                const st = statusMap[doc.status_validasi] || statusMap.pending;
+                                                const fileUrl = `${API_URL}${doc.file_path}`;
+                                                const isImage = /\.(jpg|jpeg|png)$/i.test(doc.file_path);
+                                                return (
+                                                    <div key={doc.id} style={{ padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#fff', border: '1px solid var(--gray-200)' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isImage ? '0.5rem' : 0 }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                <FiFile style={{ color: 'var(--sage-600)' }} />
+                                                                <div>
+                                                                    <p style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--gray-700)' }}>{reqDoc.label}</p>
+                                                                    <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: st.bg, color: st.color, fontWeight: 600 }}>{st.label}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                                                <button onClick={() => setPreviewDoc({ url: fileUrl, label: reqDoc.label, isImage })}
+                                                                    style={{ padding: '4px 10px', borderRadius: '6px', background: '#dbeafe', color: '#2563eb', fontSize: '0.72rem', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                                    <FiEye size={12} /> Lihat
+                                                                </button>
+                                                                <a href={fileUrl} download
+                                                                    style={{ padding: '4px 10px', borderRadius: '6px', background: '#f3e8ff', color: '#7c3aed', fontSize: '0.72rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                                    <FiDownload size={12} /> Unduh
+                                                                </a>
+                                                                {doc.status_validasi !== 'valid' && (
+                                                                    <button onClick={async () => { await validasiDokumen(doc.id, 'valid'); const docs = await getDokumenBySiswaId(detailModal.id); setDetailDocs(docs || []); }}
+                                                                        style={{ padding: '4px 10px', borderRadius: '6px', background: '#d1fae5', color: '#065f46', fontSize: '0.72rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Validasi</button>
+                                                                )}
+                                                                {doc.status_validasi !== 'revisi' && (
+                                                                    <button onClick={async () => { await validasiDokumen(doc.id, 'revisi'); const docs = await getDokumenBySiswaId(detailModal.id); setDetailDocs(docs || []); }}
+                                                                        style={{ padding: '4px 10px', borderRadius: '6px', background: '#fee2e2', color: '#991b1b', fontSize: '0.72rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Revisi</button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {isImage && (
+                                                            <img src={fileUrl} alt={reqDoc.label}
+                                                                onClick={() => setPreviewDoc({ url: fileUrl, label: reqDoc.label, isImage: true })}
+                                                                style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '6px', cursor: 'pointer', border: '1px solid var(--gray-200)' }} />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
                             {/* Action button in detail modal */}
                             {['belum_lengkap', 'menunggu_verifikasi'].includes(detailModal.status_pendaftaran) && (
                                 <div style={{ marginTop: '1.25rem' }}>
@@ -353,6 +448,38 @@ const VerifikasiManager = () => {
                             <button className="btn-add" onClick={handleVerify} disabled={saving || !jadwalTes.tanggal || !jadwalTes.waktu}>
                                 {saving ? 'Memproses...' : <><FiCheckCircle /> Verifikasi & Kirim Jadwal</>}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Document Preview Modal */}
+            {previewDoc && (
+                <div className="admin-modal-overlay" onClick={() => setPreviewDoc(null)} style={{ zIndex: 10000 }}>
+                    <div onClick={e => e.stopPropagation()} style={{
+                        background: '#fff', borderRadius: '16px', width: '90%', maxWidth: '800px',
+                        maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid var(--gray-200)' }}>
+                            <h3 style={{ fontSize: '1rem', color: 'var(--gray-700)' }}>{previewDoc.label}</h3>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <a href={previewDoc.url} target="_blank" rel="noopener noreferrer"
+                                    style={{ padding: '6px 14px', borderRadius: '8px', background: '#dbeafe', color: '#2563eb', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>Buka Tab Baru</a>
+                                <a href={previewDoc.url} download
+                                    style={{ padding: '6px 14px', borderRadius: '8px', background: '#f3e8ff', color: '#7c3aed', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <FiDownload size={14} /> Unduh
+                                </a>
+                                <button onClick={() => setPreviewDoc(null)} style={{ background: 'var(--gray-100)', border: 'none', borderRadius: '8px', padding: '6px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                    <FiX size={18} />
+                                </button>
+                            </div>
+                        </div>
+                        <div style={{ flex: 1, overflow: 'auto', padding: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', background: '#f9fafb' }}>
+                            {previewDoc.isImage ? (
+                                <img src={previewDoc.url} alt={previewDoc.label} style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: '8px' }} />
+                            ) : (
+                                <iframe src={previewDoc.url} title={previewDoc.label} style={{ width: '100%', height: '70vh', border: 'none', borderRadius: '8px' }} />
+                            )}
                         </div>
                     </div>
                 </div>

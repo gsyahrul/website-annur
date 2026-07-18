@@ -5,6 +5,20 @@
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+// --------------- Custom Error for Auth Failures ---------------
+
+/**
+ * AuthError — thrown when the server responds with 401/403.
+ * Components can check `error instanceof AuthError` to trigger logout.
+ */
+export class AuthError extends Error {
+    constructor(message, status) {
+        super(message);
+        this.name = 'AuthError';
+        this.status = status;
+    }
+}
+
 // --------------- Auth Helpers ---------------
 
 function getToken() {
@@ -36,6 +50,17 @@ async function apiFetch(path, options = {}) {
         },
         ...rest,
     });
+
+    // Auto-clear token on authentication failures
+    if (res.status === 401 || res.status === 403) {
+        clearToken();
+        const err = await res.json().catch(() => ({}));
+        throw new AuthError(
+            err?.message || 'Sesi Anda telah berakhir. Silakan login kembali.',
+            res.status
+        );
+    }
+
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err?.message || err?.errors?.[0]?.message || `API error: ${res.status}`);
@@ -53,6 +78,17 @@ async function apiFormFetch(path, formData, method = 'POST') {
         headers: authHeaders(),
         body: formData,
     });
+
+    // Auto-clear token on authentication failures
+    if (res.status === 401 || res.status === 403) {
+        clearToken();
+        const err = await res.json().catch(() => ({}));
+        throw new AuthError(
+            err?.message || 'Sesi Anda telah berakhir. Silakan login kembali.',
+            res.status
+        );
+    }
+
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err?.message || `API error: ${res.status}`);
@@ -247,6 +283,11 @@ export async function validasiDokumen(id, statusValidasi) {
         body: JSON.stringify({ status_validasi: statusValidasi }),
     });
     return res.data || res;
+}
+
+export async function getDokumenBySiswaId(siswaId) {
+    const res = await apiFetch(`/api/siswa/dokumen/${siswaId}`);
+    return res.data;
 }
 
 // --------------- Admin: Verifikasi & Status ---------------

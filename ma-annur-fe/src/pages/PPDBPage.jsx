@@ -1,20 +1,19 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiUsers, FiClipboard, FiCheckCircle, FiUser, FiDollarSign, FiSend, FiX, FiCopy, FiSearch, FiClock, FiAlertCircle, FiDownload, FiArrowLeft } from 'react-icons/fi';
 import { GiMoon } from 'react-icons/gi';
-import { useAuth } from '../context/AuthContext';
-import { createBiodata, cekStatusPPDB, registerUser, loginDirectus, getCurrentUser } from '../lib/directus';
+import { useAuth, AuthError } from '../context/AuthContext';
+import { createBiodata, updateBiodata, getBiodata, uploadDokumen, getDokumen, cekStatusPPDB, registerUser } from '../lib/directus';
 import html2pdf from 'html2pdf.js';
 import './PPDBPage.css';
 
 const PPDBPage = () => {
-    const { user, login: authLogin } = useAuth();
+    const { user, isAuthenticated, login: authLogin, handleAuthError } = useAuth();
 
     // Registration/Login state
     const [authMode, setAuthMode] = useState('register'); // 'register' | 'login'
     const [authForm, setAuthForm] = useState({ email: '', password: '' });
     const [authError, setAuthError] = useState('');
     const [authLoading, setAuthLoading] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(!!user);
 
     const [formData, setFormData] = useState({
         namaLengkap: '', tempatLahir: '', tanggalLahir: '', jenisKelamin: '',
@@ -22,7 +21,12 @@ const PPDBPage = () => {
     });
     const [submitting, setSubmitting] = useState(false);
     const [paymentData, setPaymentData] = useState(null);
+    const [justSubmitted, setJustSubmitted] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [existingBiodata, setExistingBiodata] = useState(null);
+    const [biodataLoading, setBiodataLoading] = useState(false);
+    const [uploadedDocs, setUploadedDocs] = useState([]);
+    const [uploadingDoc, setUploadingDoc] = useState(null);
 
     // Cek Status state
     const [statusNisn, setStatusNisn] = useState('');
@@ -32,6 +36,40 @@ const PPDBPage = () => {
     const [downloading, setDownloading] = useState(false);
     const [downloaded, setDownloaded] = useState(false);
     const kartuRef = useRef(null);
+
+    // Check existing biodata only when user is authenticated
+    useEffect(() => {
+        if (!user) {
+            setExistingBiodata(null);
+            setBiodataLoading(false);
+            return;
+        }
+        setBiodataLoading(true);
+        getBiodata()
+            .then(data => {
+                if (data) {
+                    setExistingBiodata(data);
+                }
+            })
+            .catch((err) => {
+                // If auth error, clear auth state
+                if (err instanceof AuthError) {
+                    handleAuthError();
+                }
+                // No biodata yet — that's fine, show the form
+                setExistingBiodata(null);
+            })
+            .finally(() => setBiodataLoading(false));
+    }, [user, handleAuthError]);
+
+    // Load existing documents when biodata is loaded
+    useEffect(() => {
+        if (existingBiodata) {
+            getDokumen()
+                .then(docs => setUploadedDocs(docs || []))
+                .catch(() => setUploadedDocs([]));
+        }
+    }, [existingBiodata]);
 
     const handleAuthSubmit = async (e) => {
         e.preventDefault();
@@ -43,7 +81,7 @@ const PPDBPage = () => {
             }
             const result = await authLogin(authForm.email, authForm.password);
             if (result.success) {
-                setIsAuthenticated(true);
+                // AuthContext will update `user` and `isAuthenticated` automatically
             } else {
                 setAuthError(result.message);
             }
@@ -62,13 +100,30 @@ const PPDBPage = () => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const result = await createBiodata({
+            const payload = {
                 nisn: formData.nisn, nama_lengkap: formData.namaLengkap,
                 tempat_lahir: formData.tempatLahir, tanggal_lahir: formData.tanggalLahir,
                 jenis_kelamin: formData.jenisKelamin, asal_sekolah: formData.asalSekolah,
                 jurusan: formData.jurusan, no_hp: formData.noHp, alamat: formData.alamat,
+            };
+
+            let result;
+            if (existingBiodata) {
+                // Update existing biodata
+                result = await updateBiodata(payload);
+            } else {
+                // Create new biodata
+                result = await createBiodata(payload);
+            }
+
+            // Reload biodata to get latest data
+            const latestBiodata = await getBiodata();
+            setExistingBiodata(latestBiodata);
+            setPaymentData({
+                kode_unik: latestBiodata?.kode_unik || result?.kode_unik,
+                nominal_pembayaran: latestBiodata?.nominal_pembayaran || result?.nominal_pembayaran,
             });
-            setPaymentData(result);
+            setJustSubmitted(true);
             setFormData({ namaLengkap: '', tempatLahir: '', tanggalLahir: '', jenisKelamin: '', asalSekolah: '', nisn: '', noHp: '', alamat: '', jurusan: '' });
         } catch (err) {
             alert('Gagal mengirim pendaftaran: ' + err.message);
@@ -195,7 +250,7 @@ const PPDBPage = () => {
                 </div>
 
                 <div className="ppdb-form-card">
-                    {!(isAuthenticated || user) ? (
+                    {!isAuthenticated ? (
                         <>
                             <h3>{authMode === 'register' ? 'Buat Akun Baru' : 'Masuk ke Akun'}</h3>
                             <p>{authMode === 'register' ? 'Daftar akun untuk memulai proses PPDB' : 'Masuk dengan akun yang sudah terdaftar'}</p>
@@ -217,6 +272,143 @@ const PPDBPage = () => {
                                 </button>
                             </p>
                         </>
+                    ) : biodataLoading ? (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-400)' }}>Memuat data...</div>
+                    ) : existingBiodata ? (
+                        <>
+                            <h3>✅ Pendaftaran Anda Sudah Tercatat</h3>
+                            <p style={{ color: 'var(--gray-500)', marginBottom: '1rem' }}>Berikut adalah ringkasan data pendaftaran Anda</p>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                                {[
+                                    ['Nama Lengkap', existingBiodata.nama_lengkap],
+                                    ['NISN', existingBiodata.nisn],
+                                    ['Tempat Lahir', existingBiodata.tempat_lahir],
+                                    ['Tanggal Lahir', existingBiodata.tanggal_lahir ? new Date(existingBiodata.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'],
+                                    ['Jenis Kelamin', existingBiodata.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'],
+                                    ['Jurusan', existingBiodata.jurusan || '-'],
+                                    ['Asal Sekolah', existingBiodata.asal_sekolah],
+                                    ['No. HP', existingBiodata.no_hp || '-'],
+                                ].map(([label, value], i) => (
+                                    <div key={i}>
+                                        <p style={{ fontSize: '0.72rem', color: 'var(--gray-400)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</p>
+                                        <p style={{ fontSize: '0.88rem', color: 'var(--gray-700)', fontWeight: 500 }}>{value}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1rem', background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', borderRadius: '12px', border: '1px solid #a7f3d0', marginBottom: '1rem' }}>
+                                <div>
+                                    <p style={{ fontSize: '0.72rem', color: 'var(--gray-400)', marginBottom: '4px' }}>Kode Unik</p>
+                                    <p style={{ fontSize: '1.4rem', fontWeight: 800, color: '#065f46', letterSpacing: '2px' }}>{existingBiodata.kode_unik ? String(existingBiodata.kode_unik).padStart(3, '0') : '-'}</p>
+                                </div>
+                                <div>
+                                    <p style={{ fontSize: '0.72rem', color: 'var(--gray-400)', marginBottom: '4px' }}>Nominal Pembayaran</p>
+                                    <p style={{ fontSize: '1.4rem', fontWeight: 800, color: '#047857' }}>{existingBiodata.nominal_pembayaran ? formatCurrency(existingBiodata.nominal_pembayaran) : '-'}</p>
+                                </div>
+                            </div>
+
+                            <div style={{ padding: '0.75rem 1rem', background: '#f0fdf4', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '1rem' }}>
+                                <p style={{ fontSize: '0.82rem', color: '#166534' }}>
+                                    <strong>Status:</strong>{' '}
+                                    {existingBiodata.status_pendaftaran === 'belum_lengkap' && '📝 Belum Lengkap — Silakan lengkapi dokumen dan lakukan pembayaran.'}
+                                    {existingBiodata.status_pendaftaran === 'menunggu_verifikasi' && '⏳ Menunggu Verifikasi — Pembayaran sedang diverifikasi oleh admin.'}
+                                    {existingBiodata.status_pendaftaran === 'terverifikasi' && '✅ Terverifikasi — Cek jadwal tes di halaman Cek Status.'}
+                                    {existingBiodata.status_pendaftaran === 'lulus' && '🎉 Selamat! Anda dinyatakan LULUS.'}
+                                    {existingBiodata.status_pendaftaran === 'tidak_lulus' && '❌ Mohon maaf, Anda tidak lulus seleksi.'}
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setExistingBiodata(null);
+                                    setFormData({
+                                        namaLengkap: existingBiodata.nama_lengkap || '',
+                                        tempatLahir: existingBiodata.tempat_lahir || '',
+                                        tanggalLahir: existingBiodata.tanggal_lahir ? existingBiodata.tanggal_lahir.split('T')[0] : '',
+                                        jenisKelamin: existingBiodata.jenis_kelamin || '',
+                                        asalSekolah: existingBiodata.asal_sekolah || '',
+                                        nisn: existingBiodata.nisn || '',
+                                        noHp: existingBiodata.no_hp || '',
+                                        alamat: existingBiodata.alamat || '',
+                                        jurusan: existingBiodata.jurusan || '',
+                                    });
+                                }}
+                                style={{
+                                    background: 'none', border: '1px solid var(--gray-300)', color: 'var(--gray-600)',
+                                    padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500
+                                }}
+                            >
+                                ✏️ Edit Biodata
+                            </button>
+
+                            {/* Upload Dokumen Section */}
+                            <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--gray-200)', paddingTop: '1.5rem' }}>
+                                <h4 style={{ fontSize: '1rem', color: 'var(--gray-700)', marginBottom: '0.75rem' }}>📁 Upload Dokumen</h4>
+                                <p style={{ fontSize: '0.82rem', color: 'var(--gray-500)', marginBottom: '1rem' }}>Upload dokumen persyaratan pendaftaran (JPEG, PNG, atau PDF, maks 5MB)</p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    {[
+                                        { key: 'kk', label: 'Kartu Keluarga (KK)' },
+                                        { key: 'akta_kelahiran', label: 'Akta Kelahiran' },
+                                        { key: 'skl', label: 'Surat Keterangan Lulus (SKL)' },
+                                        { key: 'pas_foto', label: 'Pas Foto 3x4' },
+                                    ].map(doc => {
+                                        const uploaded = uploadedDocs.find(d => d.jenis_dokumen === doc.key);
+                                        return (
+                                            <div key={doc.key} style={{
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                padding: '0.75rem 1rem', borderRadius: '10px',
+                                                border: uploaded ? '1px solid #a7f3d0' : '1px solid var(--gray-200)',
+                                                background: uploaded ? '#f0fdf4' : 'var(--gray-50)',
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <span style={{ fontSize: '1.1rem' }}>{uploaded ? '✅' : '📄'}</span>
+                                                    <div>
+                                                        <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--gray-700)' }}>{doc.label}</p>
+                                                        {uploaded && (
+                                                            <p style={{ fontSize: '0.72rem', color: '#059669' }}>
+                                                                {uploaded.status_validasi === 'valid' ? '✓ Divalidasi' : uploaded.status_validasi === 'revisi' ? '⚠️ Perlu Revisi' : 'Menunggu validasi'}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <label style={{
+                                                    padding: '6px 14px', borderRadius: '8px', cursor: 'pointer',
+                                                    fontSize: '0.78rem', fontWeight: 600,
+                                                    background: uploaded ? '#d1fae5' : 'linear-gradient(135deg, var(--sage-500), var(--emerald-600))',
+                                                    color: uploaded ? '#065f46' : '#fff', border: 'none',
+                                                    display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                                }}>
+                                                    {uploadingDoc === doc.key ? 'Mengunggah...' : uploaded ? '🔄 Ganti' : '📤 Upload'}
+                                                    <input
+                                                        type="file"
+                                                        accept=".jpg,.jpeg,.png,.pdf"
+                                                        style={{ display: 'none' }}
+                                                        disabled={uploadingDoc === doc.key}
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files[0];
+                                                            if (!file) return;
+                                                            setUploadingDoc(doc.key);
+                                                            try {
+                                                                await uploadDokumen(file, doc.key);
+                                                                const docs = await getDokumen();
+                                                                setUploadedDocs(docs || []);
+                                                            } catch (err) {
+                                                                alert('Gagal upload: ' + err.message);
+                                                            } finally {
+                                                                setUploadingDoc(null);
+                                                                e.target.value = '';
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </>
+
                     ) : (
                         <>
                             <h3>Formulir Pendaftaran</h3>
@@ -368,11 +560,11 @@ const PPDBPage = () => {
                 )}
             </div></div>
 
-            {/* PAYMENT MODAL */}
-            {paymentData && (
-                <div className="payment-modal-overlay" onClick={() => setPaymentData(null)}>
+            {/* PAYMENT MODAL — only show after fresh form submission */}
+            {paymentData && justSubmitted && (
+                <div className="payment-modal-overlay" onClick={() => { setPaymentData(null); setJustSubmitted(false); }}>
                     <div className="payment-modal" onClick={e => e.stopPropagation()}>
-                        <button className="payment-modal-close" onClick={() => setPaymentData(null)}><FiX /></button>
+                        <button className="payment-modal-close" onClick={() => { setPaymentData(null); setJustSubmitted(false); }}><FiX /></button>
                         <div className="payment-modal-icon"><FiCheckCircle /></div>
                         <h2>Pendaftaran Berhasil!</h2>
                         <p className="payment-modal-subtitle">Silakan lakukan pembayaran biaya formulir sesuai nominal berikut:</p>
@@ -389,7 +581,7 @@ const PPDBPage = () => {
                             <div className="payment-info-item"><span className="payment-info-label">Atas Nama</span><span className="payment-info-value">Yayasan MA Annur</span></div>
                         </div>
                         <div className="payment-warning"><FiAlertCircle /><span>Transfer <strong>tepat</strong> sesuai nominal di atas (termasuk 3 digit terakhir).</span></div>
-                        <button className="payment-done-btn" onClick={() => setPaymentData(null)}>Saya Sudah Mengerti</button>
+                        <button className="payment-done-btn" onClick={() => { setPaymentData(null); setJustSubmitted(false); }}>Saya Sudah Mengerti</button>
                     </div>
                 </div>
             )}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { GiMoon } from 'react-icons/gi';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 const Navbar = ({ onLoginClick }) => {
@@ -8,6 +9,7 @@ const Navbar = ({ onLoginClick }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const location = useLocation();
     const isHome = location.pathname === '/';
+    const { user, isAuthenticated, logout, isAdmin } = useAuth();
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -23,10 +25,16 @@ const Navbar = ({ onLoginClick }) => {
         { label: 'Beranda', to: '/' },
         { label: 'Profil', to: '/profil' },
         { label: 'PPDB', to: '/ppdb' },
+        { label: 'Cek Status', to: '/cek-status' },
         { label: 'Berita', to: '/berita' },
         { label: 'Galeri', to: '/galeri' },
         { label: 'Ruang Baca Digital', to: '/ruang-baca' },
     ];
+
+    const handleLogout = async () => {
+        await logout();
+        setMenuOpen(false);
+    };
 
     return (
         <nav className={`navbar ${scrolled || !isHome ? 'scrolled' : ''}`}>
@@ -49,17 +57,43 @@ const Navbar = ({ onLoginClick }) => {
                             {link.label}
                         </Link>
                     ))}
-                    <a
-                        href="#"
-                        className="navbar-login-btn"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onLoginClick();
-                            setMenuOpen(false);
-                        }}
-                    >
-                        Login
-                    </a>
+                    {isAuthenticated ? (
+                        <>
+                            {isAdmin && (
+                                <Link
+                                    to="/admin"
+                                    className={`navbar-login-btn ${location.pathname.startsWith('/admin') ? 'active' : ''}`}
+                                    onClick={() => setMenuOpen(false)}
+                                    style={{ marginRight: '0.25rem' }}
+                                >
+                                    Dashboard
+                                </Link>
+                            )}
+                            <a
+                                href="#"
+                                className="navbar-login-btn"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleLogout();
+                                }}
+                                style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderColor: '#fca5a5' }}
+                            >
+                                Logout
+                            </a>
+                        </>
+                    ) : (
+                        <a
+                            href="#"
+                            className="navbar-login-btn"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onLoginClick();
+                                setMenuOpen(false);
+                            }}
+                        >
+                            Login
+                        </a>
+                    )}
                 </div>
 
                 <button
