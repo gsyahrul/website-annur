@@ -23,6 +23,7 @@ const {
   getOrangTua,
   uploadDokumen,
   getDokumen,
+  getDokumenBySiswaId,
   validasiDokumen,
   verifyRegistration,
   updateHasilSeleksi,
@@ -325,6 +326,7 @@ router.post('/upload-dokumen', upload.single('dokumen'), uploadDokumenRules, val
  *         description: Tidak memiliki izin (bukan admin)
  */
 router.get('/all', authorizeRoles('admin'), getAllSiswa);
+router.get('/dokumen/:siswaId', authorizeRoles('admin'), getDokumenBySiswaId);
 
 /**
  * @swagger

@@ -485,6 +485,21 @@ const getDokumen = async (req, res) => {
 };
 
 /**
+ * GET /api/siswa/dokumen/:siswaId (Admin only)
+ * Get all documents for a specific student by calon_siswa_id.
+ */
+const getDokumenBySiswaId = async (req, res) => {
+  try {
+    const { siswaId } = req.params;
+    const dokumen = await BerkasModel.findByCalonSiswaId(parseInt(siswaId));
+    res.status(200).json({ success: true, data: dokumen });
+  } catch (error) {
+    logger.error('Get Dokumen By Siswa ID Error', { error: error.message });
+    res.status(500).json({ success: false, message: 'Terjadi kesalahan.', error: error.message });
+  }
+};
+
+/**
  * PUT /api/siswa/validasi-dokumen/:id (Admin only)
  * Validate a specific document.
  * Input validation handled by siswaValidator middleware.
@@ -581,6 +596,7 @@ module.exports = {
   getOrangTua,
   uploadDokumen,
   getDokumen,
+  getDokumenBySiswaId,
   validasiDokumen,
   verifyRegistration,
   updateHasilSeleksi,
