@@ -1,5 +1,4 @@
 import { FiArrowRight, FiBookOpen } from 'react-icons/fi';
-import { GiMoon } from 'react-icons/gi';
 import { Link } from 'react-router-dom';
 import './Hero.css';
 
@@ -15,9 +14,6 @@ const Hero = () => {
             <div className="hero-shape hero-shape-2" />
 
             <div className="container hero-content">
-                <div className="hero-badge">
-                    <GiMoon /> Madrasah Aliyah Annur
-                </div>
 
                 <h1>
                     Membentuk Generasi <span>Berilmu, Berakhlak</span> & Berprestasi

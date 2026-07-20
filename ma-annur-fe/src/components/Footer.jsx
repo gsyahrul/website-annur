@@ -1,6 +1,5 @@
 import { FiMapPin, FiPhone, FiMail } from 'react-icons/fi';
 import { FaFacebook, FaInstagram, FaYoutube, FaWhatsapp } from 'react-icons/fa';
-import { GiMoon } from 'react-icons/gi';
 import './Footer.css';
 
 const Footer = () => {
@@ -10,9 +9,7 @@ const Footer = () => {
                 <div className="footer-grid">
                     <div className="footer-about">
                         <div className="footer-logo">
-                            <div className="logo-icon">
-                                <GiMoon />
-                            </div>
+                            <img src="/images/logo-annur.png" alt="Logo MA Annur" className="logo-img" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                             MA Annur
                         </div>
                         <p>

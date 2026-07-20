@@ -1,0 +1,86 @@
+services:
+  # ── MySQL Database ──────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: ppdb_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_ppdb
+      MYSQL_DATABASE: ppdb_annur
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./ma-annur-be/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ppdb_network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-proot_password_ppdb",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── Backend (Express.js API) ────────────────────────────────
+  backend:
+    build:
+      context: ./ma-annur-be
+      dockerfile: Dockerfile
+    container_name: ppdb_api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root_password_ppdb
+      DB_NAME: ppdb_annur
+      JWT_SECRET: super_secret_jwt_key_ppdb_annur_2024
+      JWT_EXPIRES_IN: 7d
+      ALLOWED_ORIGINS: http://localhost,http://localhost:3000,http://localhost:5173
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ppdb_network
+
+  # ── Frontend (React + Nginx) ────────────────────────────────
+  frontend:
+    build:
+      context: ./ma-annur-fe
+      dockerfile: Dockerfile
+      args:
+        # API URL yang di-bake ke bundle React saat build
+        # Gunakan URL relatif agar Nginx bisa proxy ke backend
+        VITE_API_URL: ""
+    container_name: ppdb_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - ppdb_network
+
+volumes:
+  mysql_data:
+  uploads_data:
+
+networks:
+  ppdb_network:
+    driver: bridge

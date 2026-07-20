@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiCalendar, FiUser, FiArrowRight } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import { fetchBerita, getAssetUrl } from '../lib/directus';
 import './PageStyles.css';
 
@@ -64,9 +65,9 @@ const BeritaPage = () => {
                                             fontSize: '0.9rem', color: 'var(--gray-500)', lineHeight: 1.7, marginBottom: '1rem',
                                             display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'
                                         }}>{article.konten ? article.konten.substring(0, 200) : ''}</p>
-                                        <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--sage-600)' }}>
+                                        <Link to={`/berita/${article.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--sage-600)', textDecoration: 'none' }}>
                                             Baca Selengkapnya <FiArrowRight />
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             ))}

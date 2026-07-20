@@ -38,17 +38,11 @@
     color: var(--sage-700);
 }
 
-.navbar-logo .logo-icon {
+.navbar-logo .logo-img {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, var(--emerald-400), var(--sage-600));
+    object-fit: contain;
     border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    color: var(--white);
-    font-weight: 800;
 }
 
 .navbar-links {

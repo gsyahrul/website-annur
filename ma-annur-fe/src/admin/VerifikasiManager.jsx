@@ -323,7 +323,7 @@ const VerifikasiManager = () => {
                                         valid: { label: '✅ Valid', bg: '#d1fae5', color: '#065f46' },
                                         revisi: { label: '⚠️ Revisi', bg: '#fee2e2', color: '#991b1b' },
                                     };
-                                    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                                    const API_URL = import.meta.env.VITE_API_URL || '';
                                     return (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                             {requiredDocs.map(reqDoc => {

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Tabel Calon Siswa
 CREATE TABLE IF NOT EXISTS calon_siswa (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
     nisn VARCHAR(20) NOT NULL UNIQUE,
     nama_lengkap VARCHAR(255) NOT NULL,
     tempat_lahir VARCHAR(100) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS calon_siswa (
 -- Tabel Data Orang Tua / Wali
 CREATE TABLE IF NOT EXISTS data_orang_tua (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    calon_siswa_id INT NOT NULL,
+    calon_siswa_id INT NOT NULL UNIQUE,
     nama_ayah VARCHAR(255) NOT NULL,
     pekerjaan_ayah VARCHAR(100),
     nama_ibu VARCHAR(255) NOT NULL,
@@ -100,5 +100,6 @@ CREATE TABLE IF NOT EXISTS buku (
     category VARCHAR(50) NOT NULL,
     badge VARCHAR(50),
     color VARCHAR(20) DEFAULT '#4a7a4a',
+    file_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

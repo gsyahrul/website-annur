@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { FiSearch, FiAlertCircle, FiClock, FiDownload, FiArrowLeft, FiCalendar, FiCheckCircle } from 'react-icons/fi';
-import { GiMoon } from 'react-icons/gi';
 import { cekStatusPPDB } from '../lib/directus';
 import html2pdf from 'html2pdf.js';
 import './CekStatus.css';
@@ -236,7 +235,7 @@ const CekStatus = () => {
                             {/* Header / Kop */}
                             <div className="kartu-kop">
                                 <div className="kartu-logo">
-                                    <GiMoon />
+                                    <img src="/images/logo-annur.png" alt="Logo" style={{ width: '45px', height: '45px', objectFit: 'contain' }} />
                                 </div>
                                 <div className="kartu-kop-text">
                                     <div className="kartu-institution">MADRASAH ALIYAH ANNUR</div>

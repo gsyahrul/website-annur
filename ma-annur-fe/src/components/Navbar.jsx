@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GiMoon } from 'react-icons/gi';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
@@ -40,9 +39,7 @@ const Navbar = ({ onLoginClick }) => {
         <nav className={`navbar ${scrolled || !isHome ? 'scrolled' : ''}`}>
             <div className="container">
                 <Link to="/" className="navbar-logo" onClick={() => setMenuOpen(false)}>
-                    <div className="logo-icon">
-                        <GiMoon />
-                    </div>
+                    <img src="/images/logo-annur.png" alt="Logo MA Annur" className="logo-img" />
                     MA Annur
                 </Link>
 

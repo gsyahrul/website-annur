@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiBook } from 'react-icons/fi';
-import { fetchAllBuku, createBuku, updateBuku, deleteBuku } from '../lib/directus';
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiBook, FiUpload, FiFile, FiExternalLink } from 'react-icons/fi';
+import { fetchAllBuku, createBuku, updateBuku, deleteBuku, getAssetUrl } from '../lib/directus';
 
 const CATEGORIES = [
     { value: 'kelas-x', label: 'Kelas X' },
@@ -33,7 +33,7 @@ const BukuManager = () => {
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ title: '', author: '', category: '', badge: '', color: '#4a7a4a' });
+    const [form, setForm] = useState({ title: '', author: '', category: '', badge: '', color: '#4a7a4a', file: null });
     const [saving, setSaving] = useState(false);
     const [filterCat, setFilterCat] = useState('');
 
@@ -49,13 +49,13 @@ const BukuManager = () => {
 
     const openAdd = () => {
         setEditing(null);
-        setForm({ title: '', author: '', category: 'kelas-x', badge: 'Kurikulum', color: '#4a7a4a' });
+        setForm({ title: '', author: '', category: 'kelas-x', badge: 'Kurikulum', color: '#4a7a4a', file: null });
         setModalOpen(true);
     };
 
     const openEdit = (b) => {
         setEditing(b);
-        setForm({ title: b.title, author: b.author, category: b.category, badge: b.badge, color: b.color });
+        setForm({ title: b.title, author: b.author, category: b.category, badge: b.badge, color: b.color, file: null });
         setModalOpen(true);
     };
 
@@ -119,14 +119,15 @@ const BukuManager = () => {
                             <th>Penulis</th>
                             <th>Kategori</th>
                             <th>Badge</th>
+                            <th>File</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-400)' }}>Memuat...</td></tr>
+                            <tr><td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-400)' }}>Memuat...</td></tr>
                         ) : filtered.length === 0 ? (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-400)' }}>Belum ada buku</td></tr>
+                            <tr><td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-400)' }}>Belum ada buku</td></tr>
                         ) : (
                             filtered.map(b => (
                                 <tr key={b.id}>
@@ -142,6 +143,16 @@ const BukuManager = () => {
                                         display: 'inline-block', padding: '2px 10px', background: 'var(--emerald-50)',
                                         color: 'var(--emerald-700)', fontSize: '0.75rem', fontWeight: 600, borderRadius: '9999px'
                                     }}>{b.badge}</span></td>
+                                    <td>
+                                        {b.file_url ? (
+                                            <a href={getAssetUrl(b.file_url)} target="_blank" rel="noopener noreferrer"
+                                               style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--sage-600)', fontWeight: 500 }}>
+                                                <FiExternalLink size={14} /> Lihat
+                                            </a>
+                                        ) : (
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>—</span>
+                                        )}
+                                    </td>
                                     <td>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                                             <button className="btn-action blue" onClick={() => openEdit(b)}><FiEdit2 /> Edit</button>
@@ -202,6 +213,57 @@ const BukuManager = () => {
                                         />
                                     ))}
                                 </div>
+                            </div>
+
+                            {/* File Upload */}
+                            <div className="form-group">
+                                <label>File Buku (PDF)</label>
+                                <div style={{
+                                    border: '2px dashed var(--gray-200)', borderRadius: '12px',
+                                    padding: '1.5rem', textAlign: 'center', cursor: 'pointer',
+                                    transition: 'all 0.3s', background: form.file ? 'var(--emerald-50)' : 'var(--gray-50)'
+                                }}
+                                    onClick={() => document.getElementById('buku-file-input').click()}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sage-400)'; e.currentTarget.style.background = 'var(--sage-50)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--gray-200)'; e.currentTarget.style.background = form.file ? 'var(--emerald-50)' : 'var(--gray-50)'; }}
+                                >
+                                    <input
+                                        id="buku-file-input"
+                                        type="file"
+                                        accept=".pdf"
+                                        style={{ display: 'none' }}
+                                        onChange={e => setForm({ ...form, file: e.target.files[0] || null })}
+                                    />
+                                    {form.file ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--emerald-700)' }}>
+                                            <FiFile size={20} />
+                                            <span style={{ fontWeight: 500 }}>{form.file.name}</span>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setForm({ ...form, file: null }); }}
+                                                style={{ background: 'none', border: 'none', color: 'var(--gray-400)', cursor: 'pointer', padding: '4px' }}
+                                            ><FiX size={16} /></button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <FiUpload size={24} style={{ color: 'var(--gray-400)', marginBottom: '8px' }} />
+                                            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', margin: 0 }}>
+                                                Klik untuk upload file PDF
+                                            </p>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)', margin: '4px 0 0' }}>
+                                                Maks. 5MB
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                                {editing?.file_url && !form.file && (
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--sage-600)', marginTop: '8px' }}>
+                                        📄 File saat ini:{' '}
+                                        <a href={getAssetUrl(editing.file_url)} target="_blank" rel="noopener noreferrer"
+                                           style={{ color: 'var(--sage-600)', fontWeight: 500 }}>
+                                            Lihat file
+                                        </a>
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div className="admin-modal-footer">

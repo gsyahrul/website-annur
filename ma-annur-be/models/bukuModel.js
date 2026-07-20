@@ -33,10 +33,10 @@ const BukuModel = {
   /**
    * Create a new book.
    */
-  async create({ title, author, category, badge, color }) {
+  async create({ title, author, category, badge, color, file_url }) {
     const [result] = await pool.query(
-      `INSERT INTO buku (title, author, category, badge, color) VALUES (?, ?, ?, ?, ?)`,
-      [title, author, category, badge || null, color || '#4a7a4a']
+      `INSERT INTO buku (title, author, category, badge, color, file_url) VALUES (?, ?, ?, ?, ?, ?)`,
+      [title, author, category, badge || null, color || '#4a7a4a', file_url || null]
     );
     return { id: result.insertId };
   },
@@ -44,10 +44,10 @@ const BukuModel = {
   /**
    * Update a book by ID.
    */
-  async update(id, { title, author, category, badge, color }) {
+  async update(id, { title, author, category, badge, color, file_url }) {
     await pool.query(
-      `UPDATE buku SET title = ?, author = ?, category = ?, badge = ?, color = ? WHERE id = ?`,
-      [title, author, category, badge || null, color || '#4a7a4a', id]
+      `UPDATE buku SET title = ?, author = ?, category = ?, badge = ?, color = ?, file_url = ? WHERE id = ?`,
+      [title, author, category, badge || null, color || '#4a7a4a', file_url !== undefined ? file_url : null, id]
     );
   },
 

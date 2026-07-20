@@ -3,7 +3,7 @@
 // Backend: Express.js at /api/*
 // =============================================================
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 // --------------- Custom Error for Auth Failures ---------------
 
@@ -131,6 +131,11 @@ export function getAssetUrl(imagePath) {
 
 export async function fetchBerita() {
     const res = await apiFetch('/api/berita');
+    return res.data;
+}
+
+export async function fetchBeritaBySlug(slug) {
+    const res = await apiFetch(`/api/berita/${slug}`);
     return res.data;
 }
 
@@ -347,18 +352,26 @@ export async function fetchAllBuku() {
 }
 
 export async function createBuku(data) {
-    const res = await apiFetch('/api/buku', {
-        method: 'POST',
-        body: JSON.stringify(data),
-    });
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('author', data.author);
+    formData.append('category', data.category);
+    if (data.badge) formData.append('badge', data.badge);
+    if (data.color) formData.append('color', data.color);
+    if (data.file) formData.append('file', data.file);
+    const res = await apiFormFetch('/api/buku', formData);
     return res.data;
 }
 
 export async function updateBuku(id, data) {
-    const res = await apiFetch(`/api/buku/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-    });
+    const formData = new FormData();
+    if (data.title) formData.append('title', data.title);
+    if (data.author) formData.append('author', data.author);
+    if (data.category) formData.append('category', data.category);
+    if (data.badge !== undefined) formData.append('badge', data.badge);
+    if (data.color) formData.append('color', data.color);
+    if (data.file) formData.append('file', data.file);
+    const res = await apiFormFetch(`/api/buku/${id}`, formData, 'PUT');
     return res.data || res;
 }
 

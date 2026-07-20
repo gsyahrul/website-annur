@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiX, FiMail, FiLock } from 'react-icons/fi';
-import { GiMoon } from 'react-icons/gi';
 import { useAuth } from '../context/AuthContext';
 import './LoginModal.css';
 
@@ -50,7 +49,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
                 <div className="modal-header">
                     <div className="modal-logo">
-                        <GiMoon />
+                        <img src="/images/logo-annur.png" alt="Logo MA Annur" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                     </div>
                     <h3>Masuk ke Portal Admin</h3>
                     <p>Madrasah Aliyah Annur</p>

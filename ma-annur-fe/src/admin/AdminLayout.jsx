@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { FiGrid, FiFileText, FiImage, FiUsers, FiLogOut, FiBook, FiCheckSquare, FiAward, FiChevronDown } from 'react-icons/fi';
-import { GiMoon } from 'react-icons/gi';
 import { useAuth } from '../context/AuthContext';
 import './AdminLayout.css';
 
@@ -25,7 +24,7 @@ const AdminLayout = () => {
         <div className="admin-layout">
             <aside className="admin-sidebar">
                 <div className="admin-sidebar-logo">
-                    <div className="logo-icon"><GiMoon /></div>
+                    <img src="/images/logo-annur.png" alt="Logo MA Annur" style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '8px' }} />
                     <div>
                         MA Annur
                         <span>Admin Panel</span>

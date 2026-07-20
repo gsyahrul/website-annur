@@ -2,3 +2,5 @@
 {"id":"1","level":"info","message":"Berita di-soft-delete","service":"ppdb-annur-api","timestamp":"2026-05-31 08:29:22"}
 {"authorId":1,"id":1,"judul":"Pengumuman PPDB 2026","level":"info","message":"Berita dibuat","service":"ppdb-annur-api","slug":"pengumuman-ppdb-2026","timestamp":"2026-07-06 10:06:03"}
 {"id":1,"level":"info","message":"Buku dibuat","service":"ppdb-annur-api","timestamp":"2026-07-06 10:06:03","title":"Al-Quran dan Terjemahan"}
+{"id":"1","level":"info","message":"Buku diperbarui","service":"ppdb-annur-api","timestamp":"2026-07-19 22:33:28","title":"Al-Quran dan Terjemahan"}
+{"id":1,"level":"info","message":"Galeri dibuat","service":"ppdb-annur-api","timestamp":"2026-07-19 22:40:12","title":"456445"}

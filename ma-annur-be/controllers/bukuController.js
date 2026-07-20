@@ -37,12 +37,13 @@ const getAllBooks = async (req, res) => {
 
 /**
  * POST /api/buku (Admin only)
- * Create a new book.
+ * Create a new book. Supports optional file upload.
  */
 const createBook = async (req, res) => {
   try {
     const { title, author, category, badge, color } = req.body;
-    const result = await BukuModel.create({ title, author, category, badge, color });
+    const file_url = req.file ? `/uploads/${req.file.filename}` : null;
+    const result = await BukuModel.create({ title, author, category, badge, color, file_url });
     logger.info('Buku dibuat', { id: result.id, title });
     res.status(201).json({
       success: true,
@@ -57,7 +58,7 @@ const createBook = async (req, res) => {
 
 /**
  * PUT /api/buku/:id (Admin only)
- * Update a book.
+ * Update a book. Supports optional file upload.
  */
 const updateBook = async (req, res) => {
   try {
@@ -67,12 +68,14 @@ const updateBook = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Buku tidak ditemukan.' });
     }
     const { title, author, category, badge, color } = req.body;
+    const file_url = req.file ? `/uploads/${req.file.filename}` : existing.file_url;
     await BukuModel.update(id, {
       title: title || existing.title,
       author: author || existing.author,
       category: category || existing.category,
       badge: badge !== undefined ? badge : existing.badge,
       color: color || existing.color,
+      file_url,
     });
     logger.info('Buku diperbarui', { id, title: title || existing.title });
     res.status(200).json({ success: true, message: 'Buku berhasil diperbarui.' });

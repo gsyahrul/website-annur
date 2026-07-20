@@ -2,7 +2,9 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy everything including node_modules from host
+COPY package*.json ./
+RUN npm ci --omit=dev
+
 COPY . .
 
 RUN mkdir -p /app/uploads

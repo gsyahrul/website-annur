@@ -1,9 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { FiCalendar, FiUsers, FiClipboard, FiCheckCircle, FiUser, FiDollarSign, FiSend, FiX, FiCopy, FiSearch, FiClock, FiAlertCircle, FiDownload, FiArrowLeft } from 'react-icons/fi';
-import { GiMoon } from 'react-icons/gi';
+import { useState, useEffect } from 'react';
+import { FiCalendar, FiUsers, FiClipboard, FiCheckCircle, FiUser, FiDollarSign, FiSend, FiX, FiCopy } from 'react-icons/fi';
 import { useAuth, AuthError } from '../context/AuthContext';
-import { createBiodata, updateBiodata, getBiodata, uploadDokumen, getDokumen, cekStatusPPDB, registerUser } from '../lib/directus';
-import html2pdf from 'html2pdf.js';
+import { createBiodata, updateBiodata, getBiodata, uploadDokumen, getDokumen, registerUser } from '../lib/directus';
 import './PPDBPage.css';
 
 const PPDBPage = () => {
@@ -11,7 +9,7 @@ const PPDBPage = () => {
 
     // Registration/Login state
     const [authMode, setAuthMode] = useState('register'); // 'register' | 'login'
-    const [authForm, setAuthForm] = useState({ email: '', password: '' });
+    const [authForm, setAuthForm] = useState({ email: '', password: '', confirmPassword: '' });
     const [authError, setAuthError] = useState('');
     const [authLoading, setAuthLoading] = useState(false);
 
@@ -28,14 +26,7 @@ const PPDBPage = () => {
     const [uploadedDocs, setUploadedDocs] = useState([]);
     const [uploadingDoc, setUploadingDoc] = useState(null);
 
-    // Cek Status state
-    const [statusNisn, setStatusNisn] = useState('');
-    const [statusLoading, setStatusLoading] = useState(false);
-    const [statusResult, setStatusResult] = useState(null);
-    const [statusError, setStatusError] = useState('');
-    const [downloading, setDownloading] = useState(false);
-    const [downloaded, setDownloaded] = useState(false);
-    const kartuRef = useRef(null);
+
 
     // Check existing biodata only when user is authenticated
     useEffect(() => {
@@ -74,6 +65,10 @@ const PPDBPage = () => {
     const handleAuthSubmit = async (e) => {
         e.preventDefault();
         setAuthError('');
+        if (authMode === 'register' && authForm.password !== authForm.confirmPassword) {
+            setAuthError('Password dan konfirmasi password tidak cocok.');
+            return;
+        }
         setAuthLoading(true);
         try {
             if (authMode === 'register') {
@@ -141,46 +136,7 @@ const PPDBPage = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleStatusSubmit = async (e) => {
-        e.preventDefault();
-        if (!statusNisn.trim()) return;
-        setStatusLoading(true); setStatusResult(null); setStatusError(''); setDownloaded(false);
-        try {
-            const data = await cekStatusPPDB(statusNisn.trim());
-            setStatusResult(data || 'not_found');
-        } catch (err) { setStatusError(err.message || 'Terjadi kesalahan.'); }
-        finally { setStatusLoading(false); }
-    };
 
-    const handleDownloadPDF = async () => {
-        if (!kartuRef.current) return;
-        setDownloading(true);
-        try {
-            await html2pdf().set({
-                margin: [15, 15, 15, 15],
-                filename: `Kartu_Peserta_Tes_${statusResult.nama_lengkap?.replace(/\s+/g, '_') || 'PPDB'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-                jsPDF: { unit: 'mm', format: [250, 353], orientation: 'portrait' },
-            }).from(kartuRef.current).save();
-            setDownloaded(true);
-        } catch (err) { alert('Gagal mengunduh PDF: ' + err.message); }
-        finally { setDownloading(false); }
-    };
-
-    const handleStatusReset = () => { setStatusResult(null); setStatusNisn(''); setStatusError(''); setDownloaded(false); };
-
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '-';
-        try { return new Date(dateStr).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
-        catch { return dateStr; }
-    };
-
-    const isVerified = statusResult && typeof statusResult === 'object' && statusResult.status_pendaftaran === 'terverifikasi';
-    const isPending = statusResult && typeof statusResult === 'object' && ['belum_lengkap', 'menunggu_verifikasi'].includes(statusResult.status_pendaftaran);
-    const isLulus = statusResult && typeof statusResult === 'object' && statusResult.status_pendaftaran === 'lulus';
-    const isTidakLulus = statusResult && typeof statusResult === 'object' && statusResult.status_pendaftaran === 'tidak_lulus';
-    const notFound = statusResult === 'not_found';
 
     const infoCards = [
         { icon: <FiCalendar />, value: 'Juni - Juli 2026', label: 'Periode Pendaftaran' },
@@ -260,13 +216,17 @@ const PPDBPage = () => {
                                     <input type="email" className="form-input" placeholder="email@contoh.com" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required /></div>
                                 <div className="form-group"><label>Password *</label>
                                     <input type="password" className="form-input" placeholder="Minimal 6 karakter" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required minLength={6} /></div>
+                                {authMode === 'register' && (
+                                    <div className="form-group"><label>Konfirmasi Password *</label>
+                                        <input type="password" className="form-input" placeholder="Ketik ulang password" value={authForm.confirmPassword} onChange={e => setAuthForm({...authForm, confirmPassword: e.target.value})} required minLength={6} /></div>
+                                )}
                                 <button type="submit" className="ppdb-submit-btn" disabled={authLoading}>
                                     {authLoading ? 'Memproses...' : authMode === 'register' ? 'Daftar & Masuk' : 'Masuk'}
                                 </button>
                             </form>
                             <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.9rem', color: 'var(--gray-500)' }}>
                                 {authMode === 'register' ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
-                                <button onClick={() => { setAuthMode(authMode === 'register' ? 'login' : 'register'); setAuthError(''); }}
+                                <button onClick={() => { setAuthMode(authMode === 'register' ? 'login' : 'register'); setAuthError(''); setAuthForm(f => ({...f, confirmPassword: ''})); }}
                                     style={{ background: 'none', border: 'none', color: 'var(--sage-600)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
                                     {authMode === 'register' ? 'Masuk di sini' : 'Daftar di sini'}
                                 </button>
@@ -453,112 +413,6 @@ const PPDBPage = () => {
                 </div>
             </div></div></div>
 
-            {/* CEK STATUS WIDGET */}
-            <div className="ppdb-status-section"><div className="container">
-                <div className="section-header">
-                    <div className="ppdb-hero-badge" style={{ background: 'var(--sage-100)', color: 'var(--sage-700)' }}><FiSearch /> Cek Status Pendaftaran</div>
-                    <h2>Cek Status PPDB</h2>
-                    <p>Masukkan NISN untuk mengecek status pendaftaran dan mengunduh Kartu Peserta Tes</p>
-                </div>
-                {!isVerified && !isLulus && !isTidakLulus && (
-                    <div className="status-widget-card"><form onSubmit={handleStatusSubmit}><div className="status-widget-row">
-                        <input type="text" className="form-input" placeholder="Masukkan NISN (contoh: 0012345678)" value={statusNisn} onChange={(e) => setStatusNisn(e.target.value)} maxLength={20} required />
-                        <button type="submit" className="ppdb-submit-btn" disabled={statusLoading || !statusNisn.trim()} style={{ width: 'auto', minWidth: '160px' }}>
-                            {statusLoading ? 'Mencari...' : <><FiSearch /> Cek Status</>}
-                        </button>
-                    </div></form></div>
-                )}
-                {statusError && <div className="status-alert alert-danger"><FiAlertCircle size={20} /><span>{statusError}</span></div>}
-                {notFound && <div className="status-alert alert-danger"><FiAlertCircle size={20} /><span>Data pendaftaran dengan NISN tersebut tidak ditemukan.</span></div>}
-                {isPending && <div className="status-alert alert-warning"><FiClock size={20} /><span>Data ditemukan atas nama <strong>{statusResult.nama_lengkap}</strong>. Status sedang dalam proses verifikasi.</span></div>}
-
-                {isLulus && (
-                    <div className="kartu-section">
-                        <div className="kartu-actions-top"><button className="btn-back" onClick={handleStatusReset}><FiArrowLeft /> Cari Ulang</button></div>
-                        <div style={{
-                            background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)',
-                            border: '2px solid #10b981',
-                            borderRadius: '16px',
-                            padding: '2.5rem',
-                            textAlign: 'center',
-                            marginBottom: '2rem'
-                        }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
-                            <h2 style={{ color: '#065f46', marginBottom: '0.5rem', fontSize: '1.5rem' }}>Selamat, Anda Dinyatakan LULUS!</h2>
-                            <p style={{ color: '#047857', fontSize: '1.05rem', marginBottom: '1rem' }}>
-                                <strong>{statusResult.nama_lengkap}</strong> — NISN: {statusResult.nisn}
-                            </p>
-                            <p style={{ color: '#065f46', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                                Anda telah dinyatakan lulus seleksi penerimaan siswa baru Madrasah Aliyah Annur Tahun Ajaran 2026/2027.
-                                Silakan lakukan daftar ulang sesuai jadwal yang telah ditentukan.
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {isTidakLulus && (
-                    <div className="kartu-section">
-                        <div className="kartu-actions-top"><button className="btn-back" onClick={handleStatusReset}><FiArrowLeft /> Cari Ulang</button></div>
-                        <div style={{
-                            background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
-                            border: '2px solid #ef4444',
-                            borderRadius: '16px',
-                            padding: '2.5rem',
-                            textAlign: 'center',
-                            marginBottom: '2rem'
-                        }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-                            <h2 style={{ color: '#991b1b', marginBottom: '0.5rem', fontSize: '1.5rem' }}>Tidak Lulus Seleksi</h2>
-                            <p style={{ color: '#dc2626', fontSize: '1.05rem', marginBottom: '1rem' }}>
-                                <strong>{statusResult.nama_lengkap}</strong> — NISN: {statusResult.nisn}
-                            </p>
-                            <p style={{ color: '#991b1b', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                                Mohon maaf, Anda belum dinyatakan lulus pada seleksi penerimaan siswa baru Madrasah Aliyah Annur
-                                Tahun Ajaran 2026/2027. Terima kasih atas partisipasi Anda.
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {isVerified && (
-                    <div className="kartu-section">
-                        <div className="kartu-actions-top"><button className="btn-back" onClick={handleStatusReset}><FiArrowLeft /> Cari Ulang</button></div>
-                        <div className="kartu-peserta" ref={kartuRef}>
-                            <div className="kartu-stripe"></div>
-                            <div className="kartu-kop"><div className="kartu-logo"><GiMoon /></div><div className="kartu-kop-text"><div className="kartu-institution">MADRASAH ALIYAH ANNUR</div><div className="kartu-address">Jl. Pendidikan No. 1 — Terakreditasi A</div></div></div>
-                            <div className="kartu-title-band"><span>KARTU PESERTA TES MASUK</span><span className="kartu-tahun">T.A 2026/2027</span></div>
-                            <div className="kartu-body">
-                                <div className="kartu-main-layout">
-                                    <div className="kartu-photo-area"><div className="kartu-photo-placeholder"><span>FOTO</span><span className="photo-size">3×4</span></div><div className="kartu-no-peserta"><div className="no-peserta-label">NO. PESERTA</div><div className="no-peserta-value">{String(statusResult.id).padStart(4, '0')}</div></div></div>
-                                    <div className="kartu-info"><table className="kartu-table"><tbody>
-                                        {[['Nama Lengkap', statusResult.nama_lengkap],['NISN', statusResult.nisn],['Asal Sekolah', statusResult.asal_sekolah],['Jurusan Pilihan', statusResult.jurusan],['Jenis Kelamin', statusResult.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan']].map(([label, val], i) => (
-                                            <tr key={i}><td className="td-label">{label}</td><td className="td-sep">:</td><td className="td-value">{val}</td></tr>
-                                        ))}
-                                    </tbody></table></div>
-                                </div>
-                                <div className="kartu-jadwal"><div className="jadwal-header"><FiCalendar /> JADWAL TES MASUK</div><div className="jadwal-grid">
-                                    <div className="jadwal-item"><div className="jadwal-icon-circle">📅</div><div className="jadwal-detail"><div className="jadwal-label">Hari / Tanggal</div><div className="jadwal-value">{formatDate(statusResult.jadwal_tes_tanggal)}</div></div></div>
-                                    <div className="jadwal-item"><div className="jadwal-icon-circle">🕐</div><div className="jadwal-detail"><div className="jadwal-label">Waktu</div><div className="jadwal-value">{statusResult.jadwal_tes_waktu || '-'} WIB</div></div></div>
-                                    <div className="jadwal-item"><div className="jadwal-icon-circle">📍</div><div className="jadwal-detail"><div className="jadwal-label">Tempat</div><div className="jadwal-value">{statusResult.jadwal_tes_lokasi || 'Gedung Utama MA Annur'}</div></div></div>
-                                </div></div>
-                                <div className="kartu-catatan"><p><strong>Catatan:</strong> Kartu ini wajib dibawa saat mengikuti tes masuk.</p></div>
-                                <div className="kartu-signature">
-                                    <div className="sig-block"><div className="sig-label">Peserta,</div><div className="sig-space"></div><div className="sig-name">{statusResult.nama_lengkap}</div></div>
-                                    <div className="sig-block"><div className="sig-label">Panitia PPDB,</div><div className="sig-space"></div><div className="sig-name">____________________</div></div>
-                                </div>
-                            </div>
-                            <div className="kartu-stripe-bottom"></div>
-                        </div>
-                        <div className="kartu-download-area">
-                            {!downloaded ? (
-                                <button className="btn-download" onClick={handleDownloadPDF} disabled={downloading}>
-                                    {downloading ? <><span className="spinner-inline"></span> Mengunduh...</> : <><FiDownload size={20} /> Unduh Kartu Peserta (PDF)</>}
-                                </button>
-                            ) : (<div className="download-success"><FiCheckCircle size={20} /><span>Kartu peserta berhasil diunduh!</span></div>)}
-                        </div>
-                    </div>
-                )}
-            </div></div>
 
             {/* PAYMENT MODAL — only show after fresh form submission */}
             {paymentData && justSubmitted && (

@@ -1,15 +1,7 @@
 import { useState, useEffect } from 'react';
-import { FiBookOpen, FiBook, FiGlobe, FiClock, FiAward } from 'react-icons/fi';
-import { fetchBuku } from '../lib/directus';
+import { FiBookOpen, FiBook, FiGlobe, FiClock, FiAward, FiExternalLink } from 'react-icons/fi';
+import { fetchBuku, getAssetUrl } from '../lib/directus';
 import './PageStyles.css';
-
-const ICON_MAP = {
-    'BookOpen': <FiBookOpen />,
-    'Book': <FiBook />,
-    'Globe': <FiGlobe />,
-    'Clock': <FiClock />,
-    'Award': <FiAward />,
-};
 
 const RuangBacaPage = () => {
     const [activeTab, setActiveTab] = useState('kelas-x');
@@ -39,6 +31,14 @@ const RuangBacaPage = () => {
         if (['Nasional', 'Dunia', 'Kamus', 'Atlas', 'Ensiklopedia'].includes(badge)) return <FiGlobe />;
         if (badge === 'Sejarah' || badge === 'sejarah') return <FiClock />;
         return <FiBook />;
+    };
+
+    const handleBookClick = (book) => {
+        if (book.file_url) {
+            window.open(getAssetUrl(book.file_url), '_blank');
+        } else {
+            alert('File buku belum tersedia. Silakan hubungi admin.');
+        }
     };
 
     return (
@@ -100,6 +100,7 @@ const RuangBacaPage = () => {
                                     background: 'var(--white)', borderRadius: '16px', overflow: 'hidden',
                                     boxShadow: '0 1px 3px rgba(0,0,0,0.08)', transition: 'all 0.3s ease', cursor: 'pointer'
                                 }}
+                                    onClick={() => handleBookClick(book)}
                                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; }}
                                 >
@@ -118,6 +119,18 @@ const RuangBacaPage = () => {
                                         <div style={{ position: 'relative', zIndex: 1, fontSize: '2.5rem', color: 'rgba(255,255,255,0.9)' }}>
                                             {getIcon(book.badge)}
                                         </div>
+                                        {/* File indicator */}
+                                        {book.file_url && (
+                                            <div style={{
+                                                position: 'absolute', top: '10px', right: '10px', zIndex: 2,
+                                                background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)',
+                                                padding: '4px 10px', borderRadius: '8px',
+                                                display: 'flex', alignItems: 'center', gap: '4px',
+                                                fontSize: '0.7rem', color: 'white', fontWeight: 600
+                                            }}>
+                                                <FiExternalLink size={12} /> PDF
+                                            </div>
+                                        )}
                                     </div>
                                     <div style={{ padding: '1rem 1.25rem' }}>
                                         <h4 style={{

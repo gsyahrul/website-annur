@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ProfilPage from './pages/ProfilPage';
 import PPDBPage from './pages/PPDBPage';
 import BeritaPage from './pages/BeritaPage';
+import BeritaDetailPage from './pages/BeritaDetailPage';
 import GaleriPage from './pages/GaleriPage';
 import RuangBacaPage from './pages/RuangBacaPage';
 import CekStatus from './pages/CekStatus';
@@ -40,6 +41,7 @@ function PublicLayout({ onLoginClick }) {
         <Route path="/profil" element={<ProfilPage />} />
         <Route path="/ppdb" element={<PPDBPage />} />
         <Route path="/berita" element={<BeritaPage />} />
+        <Route path="/berita/:slug" element={<BeritaDetailPage />} />
         <Route path="/galeri" element={<GaleriPage />} />
         <Route path="/ruang-baca" element={<RuangBacaPage />} />
         <Route path="/cek-status" element={<CekStatus />} />
