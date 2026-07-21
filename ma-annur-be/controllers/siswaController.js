@@ -417,6 +417,11 @@ const uploadDokumen = async (req, res) => {
 
     const filePath = `/uploads/${req.file.filename}`;
 
+    // Auto-update student status to menunggu_verifikasi when uploading proof of payment
+    if (jenis_dokumen === 'bukti_pembayaran' && siswa.status_pendaftaran === 'belum_lengkap') {
+      await CalonSiswaModel.updateStatus(siswa.id, 'menunggu_verifikasi');
+    }
+
     // Check if this document type already exists (update instead of create)
     const existingDoc = await BerkasModel.findByJenis(siswa.id, jenis_dokumen);
     if (existingDoc) {

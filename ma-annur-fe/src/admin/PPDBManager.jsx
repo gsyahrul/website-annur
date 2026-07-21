@@ -273,6 +273,7 @@ const PPDBManager = () => {
                                     <p style={{ fontSize: '0.85rem', color: 'var(--gray-400)' }}>Memuat dokumen...</p>
                                 ) : (() => {
                                     const requiredDocs = [
+                                        { key: 'bukti_pembayaran', label: 'Bukti Pembayaran Pendaftaran' },
                                         { key: 'kk', label: 'Kartu Keluarga (KK)' },
                                         { key: 'akta_kelahiran', label: 'Akta Kelahiran' },
                                         { key: 'skl', label: 'Surat Keterangan Lulus (SKL)' },

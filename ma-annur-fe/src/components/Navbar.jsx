@@ -56,7 +56,7 @@ const Navbar = ({ onLoginClick }) => {
                     ))}
                     {isAuthenticated ? (
                         <>
-                            {isAdmin && (
+                            {isAdmin ? (
                                 <Link
                                     to="/admin"
                                     className={`navbar-login-btn ${location.pathname.startsWith('/admin') ? 'active' : ''}`}
@@ -64,6 +64,15 @@ const Navbar = ({ onLoginClick }) => {
                                     style={{ marginRight: '0.25rem' }}
                                 >
                                     Dashboard
+                                </Link>
+                            ) : (
+                                <Link
+                                    to="/dashboard"
+                                    className={`navbar-login-btn ${location.pathname === '/dashboard' ? 'active' : ''}`}
+                                    onClick={() => setMenuOpen(false)}
+                                    style={{ marginRight: '0.25rem' }}
+                                >
+                                    Dashboard Saya
                                 </Link>
                             )}
                             <a

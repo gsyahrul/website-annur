@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS data_orang_tua (
 CREATE TABLE IF NOT EXISTS berkas_dokumen (
     id INT AUTO_INCREMENT PRIMARY KEY,
     calon_siswa_id INT NOT NULL,
-    jenis_dokumen ENUM('kk', 'akta_kelahiran', 'skl', 'pas_foto') NOT NULL,
+    jenis_dokumen VARCHAR(50) NOT NULL,
     file_path VARCHAR(255) NOT NULL,
     status_validasi ENUM('pending', 'valid', 'revisi') DEFAULT 'pending',
     FOREIGN KEY (calon_siswa_id) REFERENCES calon_siswa(id) ON DELETE CASCADE

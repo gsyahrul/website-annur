@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiX, FiMail, FiLock } from 'react-icons/fi';
+import { FiX, FiMail, FiLock, FiUserPlus, FiLogIn } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
+import { registerUser } from '../lib/directus';
 import './LoginModal.css';
 
 const LoginModal = ({ isOpen, onClose }) => {
+    const [mode, setMode] = useState('login'); // 'login' | 'register'
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const { login } = useAuth();
@@ -14,27 +17,48 @@ const LoginModal = ({ isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
+    const switchMode = () => {
+        setMode(mode === 'login' ? 'register' : 'login');
+        setError('');
+        setConfirmPassword('');
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (mode === 'register' && password !== confirmPassword) {
+            setError('Password dan konfirmasi password tidak cocok.');
+            return;
+        }
+        if (password.length < 6) {
+            setError('Password minimal 6 karakter.');
+            return;
+        }
+
         setSubmitting(true);
         try {
+            if (mode === 'register') {
+                await registerUser(email, password);
+            }
             const result = await login(email, password);
             if (result.success) {
                 onClose();
                 setEmail('');
                 setPassword('');
-                // Only redirect to admin dashboard for admin users
-                // Calon siswa stays on current page
+                setConfirmPassword('');
+                setMode('login');
                 const currentUser = JSON.parse(atob(localStorage.getItem('auth_token')?.split('.')[1] || '{}'));
                 if (currentUser.role === 'admin') {
                     navigate('/admin');
+                } else {
+                    navigate('/dashboard');
                 }
             } else {
                 setError(result.message);
             }
-        } catch {
-            setError('Terjadi kesalahan. Coba lagi.');
+        } catch (err) {
+            setError(err.message || 'Terjadi kesalahan. Coba lagi.');
         } finally {
             setSubmitting(false);
         }
@@ -51,8 +75,8 @@ const LoginModal = ({ isOpen, onClose }) => {
                     <div className="modal-logo">
                         <img src="/images/logo-annur.png" alt="Logo MA Annur" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                     </div>
-                    <h3>Masuk ke Portal Admin</h3>
-                    <p>Madrasah Aliyah Annur</p>
+                    <h3>{mode === 'login' ? 'Masuk ke Akun' : 'Buat Akun Baru'}</h3>
+                    <p>{mode === 'login' ? 'Madrasah Aliyah Annur' : 'Daftar untuk memulai proses PPDB'}</p>
                 </div>
 
                 {error && (
@@ -66,15 +90,15 @@ const LoginModal = ({ isOpen, onClose }) => {
 
                 <form className="modal-form" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="email">
+                        <label htmlFor="modal-email">
                             <FiMail style={{ marginRight: '4px', verticalAlign: 'middle' }} />
                             Email
                         </label>
                         <input
-                            id="email"
+                            id="modal-email"
                             type="email"
                             className="form-input"
-                            placeholder="admin@madrasahannur.sch.id"
+                            placeholder="email@contoh.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -82,28 +106,56 @@ const LoginModal = ({ isOpen, onClose }) => {
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="password">
+                        <label htmlFor="modal-password">
                             <FiLock style={{ marginRight: '4px', verticalAlign: 'middle' }} />
                             Password
                         </label>
                         <input
-                            id="password"
+                            id="modal-password"
                             type="password"
                             className="form-input"
-                            placeholder="Masukkan password"
+                            placeholder="Minimal 6 karakter"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            minLength={6}
                         />
                     </div>
 
+                    {mode === 'register' && (
+                        <div className="form-group">
+                            <label htmlFor="modal-confirm-password">
+                                <FiLock style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                                Konfirmasi Password
+                            </label>
+                            <input
+                                id="modal-confirm-password"
+                                type="password"
+                                className="form-input"
+                                placeholder="Ketik ulang password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                minLength={6}
+                            />
+                        </div>
+                    )}
+
                     <button type="submit" className="modal-submit" disabled={submitting}>
-                        {submitting ? 'Memproses...' : 'Masuk'}
+                        {submitting ? 'Memproses...' : mode === 'login' ? (
+                            <><FiLogIn style={{ marginRight: '6px' }} /> Masuk</>
+                        ) : (
+                            <><FiUserPlus style={{ marginRight: '6px' }} /> Daftar & Masuk</>
+                        )}
                     </button>
                 </form>
 
                 <div className="modal-footer">
-                    Lupa password? <a href="#">Hubungi Admin</a>
+                    {mode === 'login' ? (
+                        <>Belum punya akun? <a href="#" onClick={(e) => { e.preventDefault(); switchMode(); }}>Daftar di sini</a></>
+                    ) : (
+                        <>Sudah punya akun? <a href="#" onClick={(e) => { e.preventDefault(); switchMode(); }}>Masuk di sini</a></>
+                    )}
                 </div>
             </div>
         </div>

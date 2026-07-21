@@ -85,8 +85,8 @@ const orangTuaRules = [
 const uploadDokumenRules = [
   body('jenis_dokumen')
     .notEmpty().withMessage('Jenis dokumen wajib diisi.')
-    .isIn(['kk', 'akta_kelahiran', 'skl', 'pas_foto'])
-    .withMessage('Jenis dokumen tidak valid. Pilih salah satu: kk, akta_kelahiran, skl, pas_foto.'),
+    .isIn(['kk', 'akta_kelahiran', 'skl', 'pas_foto', 'bukti_pembayaran'])
+    .withMessage('Jenis dokumen tidak valid. Pilih salah satu: kk, akta_kelahiran, skl, pas_foto, bukti_pembayaran.'),
 ];
 
 /**

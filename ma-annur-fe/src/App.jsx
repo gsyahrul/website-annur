@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -14,6 +14,7 @@ import BeritaDetailPage from './pages/BeritaDetailPage';
 import GaleriPage from './pages/GaleriPage';
 import RuangBacaPage from './pages/RuangBacaPage';
 import CekStatus from './pages/CekStatus';
+import DashboardSiswa from './pages/DashboardSiswa';
 import AdminLayout from './admin/AdminLayout';
 import Dashboard from './admin/Dashboard';
 import BeritaManager from './admin/BeritaManager';
@@ -45,42 +46,50 @@ function PublicLayout({ onLoginClick }) {
         <Route path="/galeri" element={<GaleriPage />} />
         <Route path="/ruang-baca" element={<RuangBacaPage />} />
         <Route path="/cek-status" element={<CekStatus />} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardSiswa /></ProtectedRoute>} />
       </Routes>
       <Footer />
     </>
   );
 }
 
+// Context for opening login modal from any component
+const LoginModalContext = createContext(() => {});
+export const useLoginModal = () => useContext(LoginModalContext);
+
 function App() {
   const [loginOpen, setLoginOpen] = useState(false);
+  const openLogin = () => setLoginOpen(true);
 
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Admin routes */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute requireAdmin>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="berita" element={<BeritaManager />} />
-            <Route path="galeri" element={<GaleriManager />} />
-            <Route path="ppdb" element={<PPDBManager />} />
-            <Route path="verifikasi" element={<VerifikasiManager />} />
-            <Route path="kelulusan" element={<KelulusanManager />} />
-            <Route path="buku" element={<BukuManager />} />
-          </Route>
+      <LoginModalContext.Provider value={openLogin}>
+        <Router>
+          <Routes>
+            {/* Admin routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="berita" element={<BeritaManager />} />
+              <Route path="galeri" element={<GaleriManager />} />
+              <Route path="ppdb" element={<PPDBManager />} />
+              <Route path="verifikasi" element={<VerifikasiManager />} />
+              <Route path="kelulusan" element={<KelulusanManager />} />
+              <Route path="buku" element={<BukuManager />} />
+            </Route>
 
-          {/* Public routes */}
-          <Route path="*" element={<PublicLayout onLoginClick={() => setLoginOpen(true)} />} />
-        </Routes>
-        <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
-      </Router>
+            {/* Public routes */}
+            <Route path="*" element={<PublicLayout onLoginClick={openLogin} />} />
+          </Routes>
+          <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
+        </Router>
+      </LoginModalContext.Provider>
     </AuthProvider>
   );
 }
