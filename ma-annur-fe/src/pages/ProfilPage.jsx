@@ -45,7 +45,7 @@ const ProfilPage = () => {
                                 </p>
                             </div>
                             <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.2rem', color: 'var(--sage-700)' }}>
-                                Ustadz H. Ahmad Fauzan, S.Pd.I, M.Pd
+                                Erni Meliaty, S.Ag.
                             </p>
                             <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem' }}>Kepala Madrasah Aliyah Annur</p>
                         </div>

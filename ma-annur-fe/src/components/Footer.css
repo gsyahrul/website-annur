@@ -7,10 +7,14 @@
 
 .footer-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr;
     gap: var(--space-3xl);
     padding-bottom: var(--space-3xl);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-contact-col {
+    justify-self: end;
 }
 
 .footer-about .footer-logo {
@@ -118,6 +122,10 @@
     .footer-grid {
         grid-template-columns: 1fr;
         gap: var(--space-2xl);
+    }
+
+    .footer-contact-col {
+        justify-self: start;
     }
 
     .footer-bottom {

@@ -25,7 +25,7 @@ const PrincipalMessage = () => {
                                 dan profesionalisme.
                             </p>
                         </div>
-                        <p className="principal-name">Ustadz H. Ahmad Fauzan, S.Pd.I, M.Pd</p>
+                        <p className="principal-name">Erni Meliaty, S.Ag.</p>
                         <p className="principal-title">Kepala Madrasah Aliyah Annur</p>
                     </div>
                 </div>

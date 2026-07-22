@@ -4,3 +4,11 @@
 {"id":1,"level":"info","message":"Buku dibuat","service":"ppdb-annur-api","timestamp":"2026-07-06 10:06:03","title":"Al-Quran dan Terjemahan"}
 {"id":"1","level":"info","message":"Buku diperbarui","service":"ppdb-annur-api","timestamp":"2026-07-19 22:33:28","title":"Al-Quran dan Terjemahan"}
 {"id":1,"level":"info","message":"Galeri dibuat","service":"ppdb-annur-api","timestamp":"2026-07-19 22:40:12","title":"456445"}
+{"error":"Unknown column 'file_url' in 'field list'","level":"error","message":"Create Book Error","service":"ppdb-annur-api","timestamp":"2026-07-20 11:01:56"}
+{"id":1,"level":"info","message":"Buku dibuat","service":"ppdb-annur-api","timestamp":"2026-07-20 11:03:20","title":"Matematika Kelas X"}
+{"id":2,"level":"info","message":"Buku dibuat","service":"ppdb-annur-api","timestamp":"2026-07-20 11:03:21","title":"Bahasa Indonesia Kelas XI"}
+{"id":"1","level":"info","message":"Buku diperbarui","service":"ppdb-annur-api","timestamp":"2026-07-20 11:03:21","title":"Matematika Kelas X (Edisi Revisi 2024)"}
+{"id":"2","level":"info","message":"Buku dihapus","service":"ppdb-annur-api","timestamp":"2026-07-20 11:03:22","title":"Bahasa Indonesia Kelas XI"}
+{"error":"Data truncated for column 'jenis_dokumen' at row 1","level":"error","message":"Upload Dokumen Error","service":"ppdb-annur-api","timestamp":"2026-07-21 10:40:56"}
+{"error":"Data truncated for column 'jenis_dokumen' at row 1","level":"error","message":"Upload Dokumen Error","service":"ppdb-annur-api","timestamp":"2026-07-21 10:41:03"}
+{"authorId":1,"id":1,"judul":"PPDB Dimulai","level":"info","message":"Berita dibuat","service":"ppdb-annur-api","slug":"ppdb-dimulai","timestamp":"2026-07-21 11:57:22"}

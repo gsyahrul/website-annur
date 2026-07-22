@@ -18,44 +18,21 @@ const Footer = () => {
                             sejak tahun 2010.
                         </p>
                         <div className="footer-social">
-                            <a href="#" aria-label="Facebook"><FaFacebook /></a>
-                            <a href="#" aria-label="Instagram"><FaInstagram /></a>
-                            <a href="#" aria-label="YouTube"><FaYoutube /></a>
-                            <a href="#" aria-label="WhatsApp"><FaWhatsapp /></a>
+                            <a href="https://www.facebook.com/p/Madrasah-Aliyah-Annur-100063496989639/" aria-label="Facebook"><FaFacebook /></a>
+                            <a href="https://www.instagram.com/_ma.annur?igsh=MXR0cGE1dGltbTF1cA==" aria-label="Instagram"><FaInstagram /></a>
+                            <a href="https://www.youtube.com/@maannurchannel7815" aria-label="YouTube"><FaYoutube /></a>
                         </div>
                     </div>
 
-                    <div className="footer-column">
-                        <h4>Tautan Cepat</h4>
-                        <ul>
-                            <li><a href="#beranda">Beranda</a></li>
-                            <li><a href="#profil">Profil Sekolah</a></li>
-                            <li><a href="#ppdb">Informasi PPDB</a></li>
-                            <li><a href="#galeri">Galeri Kegiatan</a></li>
-                            <li><a href="#perpustakaan">Perpustakaan</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="footer-column">
-                        <h4>Akademik</h4>
-                        <ul>
-                            <li><a href="#">Kurikulum</a></li>
-                            <li><a href="#">Ekstrakurikuler</a></li>
-                            <li><a href="#">Program Tahfidz</a></li>
-                            <li><a href="#">Kalender Akademik</a></li>
-                            <li><a href="#">E-Learning</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="footer-column">
+                    <div className="footer-column footer-contact-col">
                         <h4>Hubungi Kami</h4>
                         <div className="footer-contact-item">
                             <FiMapPin />
-                            <span>Jl. Pendidikan No. 45, Kec. Cibinong, Kab. Bogor, Jawa Barat 16911</span>
+                            <span>Jl. KH. Muntar Thabrani No.51 Kel.Perwira Kec.Bekasi Utara-Kota Bekasi</span>
                         </div>
                         <div className="footer-contact-item">
                             <FiPhone />
-                            <span>(021) 8765-4321</span>
+                            <span>082125991649</span>
                         </div>
                         <div className="footer-contact-item">
                             <FiMail />
@@ -67,7 +44,7 @@ const Footer = () => {
                 <div className="footer-bottom">
                     <span>© 2026 Madrasah Aliyah Annur. Semua hak dilindungi.</span>
                     <span>
-                        Dibuat dengan ❤️ untuk pendidikan Islam
+                        Dibuat oleh Mahasiswa Universitas Nusa Mandiri
                     </span>
                 </div>
             </div>

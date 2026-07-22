@@ -63,6 +63,10 @@ async function apiFetch(path, options = {}) {
 
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        if (err?.errors && Array.isArray(err.errors) && err.errors.length > 0) {
+            const detail = err.errors.map((e) => `${e.field}: ${e.message}`).join(', ');
+            throw new Error(`${err.message || 'Validasi gagal'} (${detail})`);
+        }
         throw new Error(err?.message || err?.errors?.[0]?.message || `API error: ${res.status}`);
     }
     return res.json();
