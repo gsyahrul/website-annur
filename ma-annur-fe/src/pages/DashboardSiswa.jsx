@@ -17,30 +17,70 @@ const REGISTRASI_INFO = {
     'Biaya registrasi ulang',
   ],
 };
+
 const STEPS = [
   { num: 1, label: 'Login' },
   { num: 2, label: 'Isi Biodata' },
   { num: 3, label: 'Pembayaran' },
   { num: 4, label: 'Kartu Ujian' },
-  { num: 5, label: 'Upload Berkas' },
-  { num: 6, label: 'Pengumuman' },
+  { num: 5, label: 'Pengumuman Ujian' },
+  { num: 6, label: 'Upload Berkas' },
+  { num: 7, label: 'Daftar Ulang' },
 ];
+
 const DOC_TYPES = [
-  { key: 'bukti_pembayaran', label: 'Bukti Pembayaran Pendaftaran' },
   { key: 'kk', label: 'Kartu Keluarga (KK)' },
   { key: 'akta_kelahiran', label: 'Akta Kelahiran' },
   { key: 'skl', label: 'Surat Keterangan Lulus (SKL)' },
   { key: 'pas_foto', label: 'Pas Foto 3x4' },
 ];
 
-function getActiveStep(biodata) {
+/**
+ * Determine which step the user is currently on based on their biodata status.
+ * 
+ * Flow:
+ *   1 Login (already logged in)
+ *   2 Isi Biodata (no biodata yet)
+ *   3 Pembayaran (biodata exists, status belum_lengkap / menunggu_verifikasi)
+ *   4 Kartu Ujian (pembayaran terverifikasi, belum ada hasil seleksi)
+ *   5 Pengumuman Ujian (terverifikasi + has hasil_seleksi OR waiting for result)
+ *   6 Upload Berkas (lulus ujian, uploading documents)
+ *   7 Pengumuman Daftar Ulang (all berkas valid / final)
+ */
+function getActiveStep(biodata, docs, proceedToBerkas) {
   if (!biodata) return 2;
   const s = biodata.status_pendaftaran;
   const h = biodata.hasil_seleksi;
+
+  // Step 3: Pembayaran — belum_lengkap or menunggu_verifikasi
   if (s === 'belum_lengkap' || s === 'menunggu_verifikasi') return 3;
+
+  // Step 4: Kartu Ujian — terverifikasi, no hasil seleksi yet
   if (s === 'terverifikasi' && !h) return 4;
-  if ((s === 'terverifikasi' || s === 'lulus') && h === 'lulus') return biodata.status_pendaftaran === 'lulus' ? 6 : 5;
-  if (h === 'tidak_lulus') return 6;
+
+  // Step 5: Pengumuman Ujian — terverifikasi + hasil_seleksi exists, or tidak_lulus
+  if (s === 'terverifikasi' && h) return 5;
+  if (h === 'tidak_lulus') return 5;
+
+  // Step 6: Upload Berkas — lulus ujian, but berkas not all valid yet
+  if (h === 'lulus' && s === 'lulus') {
+    const hasBerkas = (docs || []).some(d => d.jenis_dokumen !== 'bukti_pembayaran');
+    if (!hasBerkas && !proceedToBerkas) {
+      return 5;
+    }
+    // Check if all required docs are uploaded and valid
+    const requiredKeys = DOC_TYPES.map(d => d.key);
+    const allValid = requiredKeys.every(key => {
+      const doc = (docs || []).find(d => d.jenis_dokumen === key);
+      return doc && doc.status_validasi === 'valid';
+    });
+    if (allValid) return 7;
+    return 6;
+  }
+
+  // Step 7: Daftar Ulang — status diterima or all berkas valid
+  if (s === 'diterima') return 7;
+
   return 3;
 }
 
@@ -59,6 +99,10 @@ const DashboardSiswa = () => {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [previewModalDoc, setPreviewModalDoc] = useState(null);
+  const [proceedToBerkas, setProceedToBerkas] = useState(false);
+  const [selectedBukti, setSelectedBukti] = useState(null);
+  const [selectedDocs, setSelectedDocs] = useState({});
+  const [isSubmittingDocs, setIsSubmittingDocs] = useState(false);
   const kartuRef = useRef(null);
 
   const [form, setForm] = useState({
@@ -80,8 +124,8 @@ const DashboardSiswa = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const activeStep = getActiveStep(biodata);
-  const progressPercent = ((Math.min(activeStep, 6) - 1) / 5) * 100;
+  const activeStep = getActiveStep(biodata, docs, proceedToBerkas);
+  const progressPercent = ((Math.min(activeStep, 7) - 1) / 6) * 100;
 
   const handleFormChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -128,6 +172,21 @@ const DashboardSiswa = () => {
     finally { setUploadingDoc(null); }
   };
 
+  const handleBulkUpload = async () => {
+    const keysToUpload = Object.keys(selectedDocs);
+    if (keysToUpload.length === 0) return;
+    setIsSubmittingDocs(true);
+    try {
+      for (const key of keysToUpload) {
+        await uploadDokumen(selectedDocs[key], key);
+      }
+      setSelectedDocs({});
+      await loadData();
+      alert('Semua dokumen berhasil disimpan!');
+    } catch (err) { alert('Gagal menyimpan dokumen: ' + err.message); }
+    finally { setIsSubmittingDocs(false); }
+  };
+
   const handleDownloadPDF = async () => {
     if (!kartuRef.current) return;
     setDownloading(true);
@@ -148,6 +207,18 @@ const DashboardSiswa = () => {
       <p style={{ color: 'var(--gray-400)', fontSize: '1.1rem' }}>Memuat dashboard...</p>
     </div></div>
   );
+
+  // ==================== DERIVED STATE FOR CONDITIONAL LOGIC ====================
+  const API_URL = import.meta.env.VITE_API_URL || '';
+  const buktiDoc = docs.find(d => d.jenis_dokumen === 'bukti_pembayaran');
+  const buktiIsValid = biodata?.status_pendaftaran === 'terverifikasi' || biodata?.status_pendaftaran === 'lulus' || biodata?.status_pendaftaran === 'diterima' || buktiDoc?.status_validasi === 'valid';
+  const buktiIsRevisi = buktiDoc?.status_validasi === 'revisi';
+
+  // Check if all berkas (non-bukti_pembayaran) are valid
+  const allBerkasValid = DOC_TYPES.every(dt => {
+    const doc = docs.find(d => d.jenis_dokumen === dt.key);
+    return doc && doc.status_validasi === 'valid';
+  });
 
   // ==================== RENDER ====================
   return (
@@ -224,74 +295,112 @@ const DashboardSiswa = () => {
                   </div>
                 </div>
 
-                <div className={`status-pill ${biodata.status_pendaftaran === 'menunggu_verifikasi' ? 'waiting' : 'incomplete'}`} style={{ marginBottom: '1.5rem', width: '100%', justifyContent: 'center' }}>
-                  {biodata.status_pendaftaran === 'menunggu_verifikasi'
+                {/* === STATUS PILL === */}
+                <div className={`status-pill ${buktiIsValid ? 'verified' : biodata.status_pendaftaran === 'menunggu_verifikasi' ? 'waiting' : 'incomplete'}`} style={{ marginBottom: '1.5rem', width: '100%', justifyContent: 'center' }}>
+                  {buktiIsValid
+                    ? '✅ Pembayaran sudah diverifikasi admin'
+                    : biodata.status_pendaftaran === 'menunggu_verifikasi'
                     ? '⏳ Pembayaran sedang diverifikasi admin'
                     : '📝 Silakan transfer tepat sesuai nominal di atas lalu unggah foto bukti pendaftaran'}
                 </div>
 
-                {/* Upload Bukti Pembayaran Card */}
-                {(() => {
-                  const API_URL = import.meta.env.VITE_API_URL || '';
-                  const buktiDoc = docs.find(d => d.jenis_dokumen === 'bukti_pembayaran');
-                  const isImage = buktiDoc && /\.(jpg|jpeg|png|webp)$/i.test(buktiDoc.file_path);
-                  return (
-                    <div className="bukti-upload-card" style={{ marginTop: '1rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <div>
-                          <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--gray-800)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            📷 Upload Bukti Pendaftaran / Transfer Pembayaran
-                          </h3>
-                          <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: 'var(--gray-500)' }}>
-                            Unggah foto bukti transfer atau bukti pendaftaran Anda (Format: JPG, PNG, atau PDF, maks 5MB)
-                          </p>
-                        </div>
-                        <label className={`upload-btn-label ${buktiDoc ? 'replace' : 'new'}`} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                          {uploadingDoc === 'bukti_pembayaran' ? 'Mengunggah...' : buktiDoc ? '🔄 Update Berkas' : '📤 Upload Bukti Pendaftaran'}
-                          <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" style={{ display: 'none' }} disabled={uploadingDoc === 'bukti_pembayaran'}
-                            onChange={(e) => { handleUpload(e.target.files[0], 'bukti_pembayaran'); e.target.value = ''; }} />
-                        </label>
-                      </div>
+                {/* === CATATAN REVISI DARI ADMIN (PEMBAYARAN) === */}
+                {buktiIsRevisi && buktiDoc?.catatan_admin && (
+                  <div className="admin-notes-box revisi">
+                    <div className="admin-notes-header">
+                      <span className="admin-notes-icon">⚠️</span>
+                      <span className="admin-notes-title">Catatan Revisi dari Admin</span>
+                    </div>
+                    <p className="admin-notes-content">{buktiDoc.catatan_admin}</p>
+                  </div>
+                )}
 
-                      {buktiDoc ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#fff', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--gray-200)' }}>
-                          {isImage ? (
-                            <img src={`${API_URL}${buktiDoc.file_path}`} alt="Bukti Pembayaran"
-                              onClick={() => setPreviewModalDoc({ url: `${API_URL}${buktiDoc.file_path}`, label: 'Bukti Pembayaran Pendaftaran', isImage: true })}
-                              style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', cursor: 'pointer', border: '1px solid #cbd5e1' }} />
-                          ) : (
-                            <div style={{ width: '80px', height: '80px', background: '#f1f5f9', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem' }}>📄</div>
-                          )}
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--gray-700)', marginBottom: '4px' }}>
-                              Bukti Pembayaran Pendaftaran
-                            </div>
-                            <div style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', fontWeight: 600,
-                              background: biodata.status_pendaftaran === 'terverifikasi' || buktiDoc.status_validasi === 'valid' ? '#d1fae5' : buktiDoc.status_validasi === 'revisi' ? '#fee2e2' : '#fef3c7',
-                              color: biodata.status_pendaftaran === 'terverifikasi' || buktiDoc.status_validasi === 'valid' ? '#065f46' : buktiDoc.status_validasi === 'revisi' ? '#991b1b' : '#92400e'
-                            }}>
-                              {biodata.status_pendaftaran === 'terverifikasi' || buktiDoc.status_validasi === 'valid'
-                                ? '✅ Sudah Diverifikasi Admin'
-                                : buktiDoc.status_validasi === 'revisi'
-                                ? '⚠️ Perlu Revisi Foto Bukti'
-                                : '⏳ Menunggu Verifikasi Admin'}
-                            </div>
-                            <div style={{ marginTop: '6px' }}>
-                              <button onClick={() => setPreviewModalDoc({ url: `${API_URL}${buktiDoc.file_path}`, label: 'Bukti Pembayaran Pendaftaran', isImage })}
-                                style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
-                                🔍 Lihat Foto Ukuran Penuh
-                              </button>
-                            </div>
+                {/* === UPLOAD BUKTI PEMBAYARAN CARD ===
+                     CONDITIONAL: Hidden if status is valid/terverifikasi */}
+                {!buktiIsValid && (
+                  <div className="bukti-upload-card" style={{ marginTop: '1rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--gray-800)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          📷 Upload Bukti Pendaftaran / Transfer Pembayaran
+                        </h3>
+                        <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: 'var(--gray-500)' }}>
+                          Unggah foto bukti transfer atau bukti pendaftaran Anda (Format: JPG, PNG, atau PDF, maks 5MB)
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {selectedBukti && <span style={{ fontSize: '0.8rem', color: 'var(--gray-600)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedBukti.name}</span>}
+                        <label className={`upload-btn-label ${buktiDoc ? 'replace' : 'new'}`} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                          {buktiDoc ? '🔄 Pilih File Lain' : '📤 Pilih File'}
+                          <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" style={{ display: 'none' }} disabled={uploadingDoc === 'bukti_pembayaran'}
+                            onChange={(e) => { setSelectedBukti(e.target.files[0]); e.target.value = ''; }} />
+                        </label>
+                        <button 
+                          onClick={() => { handleUpload(selectedBukti, 'bukti_pembayaran'); setSelectedBukti(null); }} 
+                          disabled={!selectedBukti || uploadingDoc === 'bukti_pembayaran'}
+                          style={{
+                            padding: '8px 16px', fontSize: '0.85rem', fontWeight: 600, border: 'none', borderRadius: '6px', cursor: (!selectedBukti || uploadingDoc === 'bukti_pembayaran') ? 'not-allowed' : 'pointer',
+                            background: (!selectedBukti || uploadingDoc === 'bukti_pembayaran') ? 'var(--gray-300)' : 'linear-gradient(135deg, var(--emerald-600), var(--emerald-700))', color: '#fff'
+                          }}>
+                          {uploadingDoc === 'bukti_pembayaran' ? 'Mengunggah...' : 'Kirim / Submit'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {buktiDoc ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#fff', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--gray-200)' }}>
+                        {/\.(jpg|jpeg|png|webp)$/i.test(buktiDoc.file_path) ? (
+                          <img src={`${API_URL}${buktiDoc.file_path}`} alt="Bukti Pembayaran"
+                            onClick={() => setPreviewModalDoc({ url: `${API_URL}${buktiDoc.file_path}`, label: 'Bukti Pembayaran Pendaftaran', isImage: true })}
+                            style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', cursor: 'pointer', border: '1px solid #cbd5e1' }} />
+                        ) : (
+                          <div style={{ width: '80px', height: '80px', background: '#f1f5f9', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem' }}>📄</div>
+                        )}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--gray-700)', marginBottom: '4px' }}>
+                            Bukti Pembayaran Pendaftaran
+                          </div>
+                          <div style={{ fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', fontWeight: 600,
+                            background: buktiIsRevisi ? '#fee2e2' : '#fef3c7',
+                            color: buktiIsRevisi ? '#991b1b' : '#92400e'
+                          }}>
+                            {buktiIsRevisi ? '⚠️ Perlu Revisi Foto Bukti' : '⏳ Menunggu Verifikasi Admin'}
+                          </div>
+                          <div style={{ marginTop: '6px' }}>
+                            <button onClick={() => setPreviewModalDoc({ url: `${API_URL}${buktiDoc.file_path}`, label: 'Bukti Pembayaran Pendaftaran', isImage: /\.(jpg|jpeg|png|webp)$/i.test(buktiDoc.file_path) })}
+                              style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+                              🔍 Lihat Foto Ukuran Penuh
+                            </button>
                           </div>
                         </div>
-                      ) : (
-                        <div style={{ padding: '1rem', border: '2px dashed #cbd5e1', borderRadius: '8px', textAlign: 'center', background: '#fff', color: 'var(--gray-400)', fontSize: '0.85rem' }}>
-                          Belum ada foto bukti pendaftaran yang diunggah. Silakan klik tombol "Upload Bukti Pendaftaran" di atas.
-                        </div>
-                      )}
+                      </div>
+                    ) : (
+                      <div style={{ padding: '1rem', border: '2px dashed #cbd5e1', borderRadius: '8px', textAlign: 'center', background: '#fff', color: 'var(--gray-400)', fontSize: '0.85rem' }}>
+                        Belum ada foto bukti pendaftaran yang diunggah. Silakan klik tombol "Upload Bukti Pendaftaran" di atas.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* === SHOW VERIFIED BADGE IF BUKTI IS VALID (form hidden) === */}
+                {buktiIsValid && buktiDoc && (
+                  <div className="admin-notes-box valid" style={{ marginTop: '1rem' }}>
+                    <div className="admin-notes-header">
+                      <span className="admin-notes-icon">✅</span>
+                      <span className="admin-notes-title">Bukti Pembayaran Sudah Diverifikasi</span>
                     </div>
-                  );
-                })()}
+                    <p className="admin-notes-content">
+                      Bukti pembayaran Anda telah diverifikasi oleh admin. Anda akan segera mendapatkan jadwal tes masuk.
+                    </p>
+                    {/\.(jpg|jpeg|png|webp)$/i.test(buktiDoc.file_path) && (
+                      <div style={{ marginTop: '0.75rem' }}>
+                        <img src={`${API_URL}${buktiDoc.file_path}`} alt="Bukti Pembayaran"
+                          onClick={() => setPreviewModalDoc({ url: `${API_URL}${buktiDoc.file_path}`, label: 'Bukti Pembayaran Pendaftaran', isImage: true })}
+                          style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', cursor: 'pointer', border: '1px solid #a7f3d0' }} />
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -351,31 +460,25 @@ const DashboardSiswa = () => {
           </div>
         )}
 
-        {/* ====== STEP 6: PENGUMUMAN ====== */}
-        {activeStep === 6 && biodata && (
+        {/* ====== STEP 5: PENGUMUMAN HASIL UJIAN ====== */}
+        {activeStep === 5 && biodata && (
           <div className="step-card">
             <div className="step-card-header">
               <div className="step-card-icon">📢</div>
-              <div><h2>Pengumuman Kelulusan</h2><p>Hasil seleksi penerimaan siswa baru</p></div>
+              <div><h2>Pengumuman Hasil Ujian</h2><p>Hasil seleksi tes masuk calon siswa baru</p></div>
             </div>
             {biodata.hasil_seleksi === 'lulus' ? (
               <div className="announcement-lulus">
                 <div className="emoji">🎉</div>
-                <h2>Selamat, Anda Dinyatakan LULUS!</h2>
+                <h2>Selamat, Anda Dinyatakan LULUS Ujian!</h2>
                 <p className="subtitle"><strong>{biodata.nama_lengkap}</strong> — NISN: {biodata.nisn}</p>
                 <p style={{ color: '#065f46', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                  Anda telah dinyatakan lulus seleksi penerimaan siswa baru Madrasah Aliyah Annur Tahun Ajaran 2026/2027.
+                  Anda telah lulus seleksi tes masuk. Silakan lanjut ke tahap berikutnya untuk upload berkas persyaratan.
                 </p>
-                <div className="registrasi-ulang-card">
-                  <h3>📌 Informasi Registrasi Ulang</h3>
-                  <div className="registrasi-ulang-grid">
-                    <div className="registrasi-ulang-item"><div className="label">Tanggal Masuk</div><div className="value">{REGISTRASI_INFO.tanggal}</div></div>
-                    <div className="registrasi-ulang-item"><div className="label">Biaya Registrasi Ulang</div><div className="value">{REGISTRASI_INFO.biaya}</div></div>
-                  </div>
-                  <div className="registrasi-ulang-barang">
-                    <div className="label">Barang yang harus dibawa</div>
-                    <ul>{REGISTRASI_INFO.barang.map((b, i) => <li key={i}>✅ {b}</li>)}</ul>
-                  </div>
+                <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                  <button onClick={() => setProceedToBerkas(true)} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, var(--emerald-600), var(--emerald-700))', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    Lanjut ke Upload Berkas ➔
+                  </button>
                 </div>
               </div>
             ) : biodata.hasil_seleksi === 'tidak_lulus' ? (
@@ -383,7 +486,7 @@ const DashboardSiswa = () => {
                 <div className="emoji">📋</div>
                 <h2>Tidak Lulus Seleksi</h2>
                 <p><strong>{biodata.nama_lengkap}</strong> — NISN: {biodata.nisn}</p>
-                <p style={{ marginTop: '0.5rem' }}>Mohon maaf, Anda belum dinyatakan lulus pada seleksi penerimaan siswa baru MA Annur Tahun Ajaran 2026/2027. Terima kasih atas partisipasi Anda.</p>
+                <p style={{ marginTop: '0.5rem' }}>Mohon maaf, Anda belum dinyatakan lulus pada seleksi tes masuk MA Annur Tahun Ajaran 2026/2027. Terima kasih atas partisipasi Anda.</p>
               </div>
             ) : (
               <div className="announcement-waiting">
@@ -395,17 +498,39 @@ const DashboardSiswa = () => {
           </div>
         )}
 
-        {/* ====== STEP 5 & 6: UPLOAD BERKAS ====== */}
-        {(activeStep === 5 || activeStep === 6) && biodata && (
+        {/* ====== STEP 6: UPLOAD BERKAS ====== */}
+        {activeStep === 6 && biodata && (
           <div className="step-card">
             <div className="step-card-header">
               <div className="step-card-icon">📁</div>
-              <div><h2>Upload & Kelola Berkas</h2><p>Selamat, Anda lulus ujian! Silakan upload dan perbarui berkas persyaratan pendaftaran (JPEG, PNG, atau PDF, maks 5MB)</p></div>
+              <div><h2>Upload & Kelola Berkas</h2><p>Selamat, Anda lulus ujian! Silakan upload berkas persyaratan pendaftaran (JPEG, PNG, atau PDF, maks 5MB)</p></div>
             </div>
+
+            {/* Global admin notes if any berkas has revisi */}
+            {docs.some(d => d.status_validasi === 'revisi' && d.jenis_dokumen !== 'bukti_pembayaran' && d.catatan_admin) && (
+              <div className="admin-notes-box revisi" style={{ marginBottom: '1.5rem' }}>
+                <div className="admin-notes-header">
+                  <span className="admin-notes-icon">📝</span>
+                  <span className="admin-notes-title">Catatan dari Admin</span>
+                </div>
+                <p className="admin-notes-content">Beberapa berkas Anda perlu direvisi. Lihat catatan per dokumen di bawah.</p>
+              </div>
+            )}
+
+            {/* All berkas valid notice */}
+            {allBerkasValid && (
+              <div className="admin-notes-box valid" style={{ marginBottom: '1.5rem' }}>
+                <div className="admin-notes-header">
+                  <span className="admin-notes-icon">✅</span>
+                  <span className="admin-notes-title">Semua Berkas Sudah Diverifikasi</span>
+                </div>
+                <p className="admin-notes-content">Seluruh dokumen persyaratan Anda telah diverifikasi dan disetujui oleh admin.</p>
+              </div>
+            )}
+
             <div className="upload-list">
               {DOC_TYPES.map(doc => {
                 const uploaded = docs.find(d => d.jenis_dokumen === doc.key);
-                const API_URL = import.meta.env.VITE_API_URL || '';
                 const isImage = uploaded && /\.(jpg|jpeg|png|webp)$/i.test(uploaded.file_path);
                 const isVerified = uploaded?.status_validasi === 'valid';
                 const isRevisi = uploaded?.status_validasi === 'revisi';
@@ -433,19 +558,39 @@ const DashboardSiswa = () => {
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {selectedDocs[doc.key] && <span style={{ fontSize: '0.8rem', color: 'var(--gray-600)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedDocs[doc.key].name}</span>}
                         {uploaded && (
                           <button onClick={() => setPreviewModalDoc({ url: `${API_URL}${uploaded.file_path}`, label: doc.label, isImage })}
                             style={{ padding: '6px 12px', borderRadius: '6px', background: '#dbeafe', color: '#2563eb', fontSize: '0.78rem', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             👁️ Lihat
                           </button>
                         )}
-                        <label className={`upload-btn-label ${uploaded ? 'replace' : 'new'}`} style={{ padding: '6px 14px', fontSize: '0.78rem' }}>
-                          {uploadingDoc === doc.key ? 'Mengunggah...' : uploaded ? '🔄 Update Berkas' : '📤 Upload'}
-                          <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" style={{ display: 'none' }} disabled={uploadingDoc === doc.key}
-                            onChange={(e) => { handleUpload(e.target.files[0], doc.key); e.target.value = ''; }} />
-                        </label>
+                        {/* CONDITIONAL: Hide upload button if document is already valid */}
+                        {uploaded?.status_validasi !== 'valid' && (
+                          <label className="upload-btn-label" style={{ padding: '6px 14px', fontSize: '0.78rem', cursor: 'pointer', background: (uploaded || selectedDocs[doc.key]) ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, var(--sage-500), var(--emerald-600))', color: '#fff' }}>
+                            {(uploaded || selectedDocs[doc.key]) ? '🔄 Pilih File Ulang' : '📤 Pilih File'}
+                            <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" style={{ display: 'none' }}
+                              onChange={(e) => { 
+                                const file = e.target.files[0];
+                                if (file) setSelectedDocs(prev => ({ ...prev, [doc.key]: file }));
+                                e.target.value = ''; 
+                              }} />
+                          </label>
+                        )}
                       </div>
                     </div>
+
+                    {/* Per-document admin notes (catatan revisi) */}
+                    {isRevisi && uploaded?.catatan_admin && (
+                      <div className="admin-notes-box revisi compact">
+                        <div className="admin-notes-header">
+                          <span className="admin-notes-icon">⚠️</span>
+                          <span className="admin-notes-title">Catatan Revisi</span>
+                        </div>
+                        <p className="admin-notes-content">{uploaded.catatan_admin}</p>
+                      </div>
+                    )}
+
                     {/* Thumbnail preview if uploaded image */}
                     {uploaded && isImage && (
                       <div style={{ marginTop: '0.25rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -458,6 +603,48 @@ const DashboardSiswa = () => {
                   </div>
                 );
               })}
+            </div>
+            {/* BULK UPLOAD SUBMIT BUTTON */}
+            {Object.keys(selectedDocs).length > 0 && (
+              <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--gray-200)', paddingTop: '1.5rem' }}>
+                <button 
+                  onClick={handleBulkUpload} 
+                  disabled={isSubmittingDocs}
+                  style={{
+                    padding: '12px 24px', background: 'linear-gradient(135deg, var(--emerald-600), var(--emerald-700))', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.95rem', cursor: isSubmittingDocs ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
+                  }}>
+                  {isSubmittingDocs ? 'Menyimpan...' : 'Simpan Perubahan 💾'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ====== STEP 7: PENGUMUMAN DAFTAR ULANG ====== */}
+        {activeStep === 7 && biodata && (
+          <div className="step-card" style={{ marginTop: '1.5rem' }}>
+            <div className="step-card-header">
+              <div className="step-card-icon">🎓</div>
+              <div><h2>Pengumuman Daftar Ulang</h2><p>Informasi registrasi ulang siswa baru</p></div>
+            </div>
+            <div className="announcement-lulus">
+              <div className="emoji">🎉</div>
+              <h2>Selamat, Anda Diterima di MA Annur!</h2>
+              <p className="subtitle"><strong>{biodata.nama_lengkap}</strong> — NISN: {biodata.nisn}</p>
+              <p style={{ color: '#065f46', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Seluruh proses pendaftaran telah selesai. Silakan lakukan registrasi ulang sesuai informasi di bawah ini.
+              </p>
+              <div className="registrasi-ulang-card">
+                <h3>📌 Informasi Registrasi Ulang</h3>
+                <div className="registrasi-ulang-grid">
+                  <div className="registrasi-ulang-item"><div className="label">Tanggal Masuk</div><div className="value">{REGISTRASI_INFO.tanggal}</div></div>
+                  <div className="registrasi-ulang-item"><div className="label">Biaya Registrasi Ulang</div><div className="value">{REGISTRASI_INFO.biaya}</div></div>
+                </div>
+                <div className="registrasi-ulang-barang">
+                  <div className="label">Barang yang harus dibawa</div>
+                  <ul>{REGISTRASI_INFO.barang.map((b, i) => <li key={i}>✅ {b}</li>)}</ul>
+                </div>
+              </div>
             </div>
           </div>
         )}

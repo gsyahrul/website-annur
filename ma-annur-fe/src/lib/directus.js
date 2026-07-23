@@ -286,10 +286,10 @@ export async function getDokumen() {
 
 // --------------- Admin: Validasi Dokumen ---------------
 
-export async function validasiDokumen(id, statusValidasi) {
+export async function validasiDokumen(id, statusValidasi, catatanAdmin = null) {
     const res = await apiFetch(`/api/siswa/validasi-dokumen/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ status_validasi: statusValidasi }),
+        body: JSON.stringify({ status_validasi: statusValidasi, catatan_admin: catatanAdmin }),
     });
     return res.data || res;
 }

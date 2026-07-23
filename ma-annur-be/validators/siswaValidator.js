@@ -98,8 +98,8 @@ const updateStatusRules = [
 
   body('status_pendaftaran')
     .notEmpty().withMessage('Status pendaftaran wajib diisi.')
-    .isIn(['belum_lengkap', 'menunggu_verifikasi', 'terverifikasi', 'lulus', 'tidak_lulus'])
-    .withMessage('Status tidak valid. Pilih: belum_lengkap, menunggu_verifikasi, terverifikasi, lulus, tidak_lulus.'),
+    .isIn(['belum_lengkap', 'menunggu_verifikasi', 'terverifikasi', 'lulus', 'tidak_lulus', 'diterima'])
+    .withMessage('Status tidak valid. Pilih: belum_lengkap, menunggu_verifikasi, terverifikasi, lulus, tidak_lulus, diterima.'),
 ];
 
 /**
@@ -113,6 +113,11 @@ const validasiDokumenRules = [
     .notEmpty().withMessage('Status validasi wajib diisi.')
     .isIn(['pending', 'valid', 'revisi'])
     .withMessage('Status validasi tidak valid. Pilih: pending, valid, revisi.'),
+
+  body('catatan_admin')
+    .optional({ values: 'null' })
+    .trim()
+    .isLength({ max: 1000 }).withMessage('Catatan admin maksimal 1000 karakter.'),
 ];
 
 /**

@@ -799,6 +799,76 @@
   color: var(--gray-400);
 }
 
+/* ===== ADMIN NOTES / CATATAN REVISI ===== */
+
+.admin-notes-box {
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+.admin-notes-box.revisi {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 1px solid #fca5a5;
+}
+
+.admin-notes-box.valid {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 1px solid #6ee7b7;
+}
+
+.admin-notes-box.compact {
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0;
+  margin-top: 0.5rem;
+}
+
+.admin-notes-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.admin-notes-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.admin-notes-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
+.admin-notes-box.revisi .admin-notes-title {
+  color: #991b1b;
+}
+
+.admin-notes-box.valid .admin-notes-title {
+  color: #065f46;
+}
+
+.admin-notes-content {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.admin-notes-box.revisi .admin-notes-content {
+  color: #7f1d1d;
+}
+
+.admin-notes-box.valid .admin-notes-content {
+  color: #064e3b;
+}
+
+.admin-notes-box.compact .admin-notes-content {
+  font-size: 0.78rem;
+}
+
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 768px) {

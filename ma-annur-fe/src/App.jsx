@@ -23,6 +23,8 @@ import PPDBManager from './admin/PPDBManager';
 import BukuManager from './admin/BukuManager';
 import VerifikasiManager from './admin/VerifikasiManager';
 import KelulusanManager from './admin/KelulusanManager';
+import VerifikasiBerkasManager from './admin/VerifikasiBerkasManager';
+import VerifikasiDiterimaManager from './admin/VerifikasiDiterimaManager';
 
 function HomePage() {
   return (
@@ -80,7 +82,9 @@ function App() {
               <Route path="galeri" element={<GaleriManager />} />
               <Route path="ppdb" element={<PPDBManager />} />
               <Route path="verifikasi" element={<VerifikasiManager />} />
+              <Route path="verifikasi-berkas" element={<VerifikasiBerkasManager />} />
               <Route path="kelulusan" element={<KelulusanManager />} />
+              <Route path="verifikasi-diterima" element={<VerifikasiDiterimaManager />} />
               <Route path="buku" element={<BukuManager />} />
             </Route>
 

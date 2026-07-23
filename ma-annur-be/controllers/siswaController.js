@@ -45,7 +45,7 @@ const createBiodata = async (req, res) => {
       data: { id: result.id, kode_unik: result.kode_unik, nominal_pembayaran: result.nominal_pembayaran },
     });
   } catch (error) {
-    logger.error('Create Biodata Error', { error: error.message, userId });
+    logger.error('Create Biodata Error', { error: error.message, userId: req.user?.id });
 
     // Handle duplicate NISN
     if (error.code === 'ER_DUP_ENTRY') {
@@ -99,7 +99,7 @@ const updateBiodata = async (req, res) => {
       message: 'Biodata berhasil diperbarui.',
     });
   } catch (error) {
-    logger.error('Update Biodata Error', { error: error.message, userId });
+    logger.error('Update Biodata Error', { error: error.message, userId: req.user?.id });
 
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({
@@ -512,7 +512,7 @@ const getDokumenBySiswaId = async (req, res) => {
 const validasiDokumen = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status_validasi } = req.body;
+    const { status_validasi, catatan_admin } = req.body;
 
     const doc = await BerkasModel.findById(id);
     if (!doc) {
@@ -522,7 +522,7 @@ const validasiDokumen = async (req, res) => {
       });
     }
 
-    await BerkasModel.updateValidasi(id, status_validasi);
+    await BerkasModel.updateValidasi(id, status_validasi, catatan_admin || null);
 
     res.status(200).json({
       success: true,

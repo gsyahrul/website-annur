@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS calon_siswa (
     jadwal_tes_waktu VARCHAR(10),
     jadwal_tes_lokasi VARCHAR(255),
     hasil_seleksi ENUM('lulus', 'tidak_lulus'),
-    status_pendaftaran ENUM('belum_lengkap', 'menunggu_verifikasi', 'terverifikasi', 'lulus', 'tidak_lulus') DEFAULT 'belum_lengkap',
+    status_pendaftaran ENUM('belum_lengkap', 'menunggu_verifikasi', 'terverifikasi', 'lulus', 'tidak_lulus', 'diterima') DEFAULT 'belum_lengkap',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     -- Index untuk pencarian nama dan asal sekolah
@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS berkas_dokumen (
     jenis_dokumen VARCHAR(50) NOT NULL,
     file_path VARCHAR(255) NOT NULL,
     status_validasi ENUM('pending', 'valid', 'revisi') DEFAULT 'pending',
+    catatan_admin TEXT DEFAULT NULL,
     FOREIGN KEY (calon_siswa_id) REFERENCES calon_siswa(id) ON DELETE CASCADE
 );
 

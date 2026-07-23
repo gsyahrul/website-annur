@@ -1,9 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const { register, login, getMe } = require('../controllers/authController');
 const { verifyToken } = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
 const { registerRules, loginRules } = require('../validators/authValidator');
+
+const authLimiter = process.env.NODE_ENV === 'test' 
+  ? (req, res, next) => next() 
+  : rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 10,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: {
+        success: false,
+        message: 'Terlalu banyak percobaan login. Silakan coba lagi dalam 15 menit.',
+      },
+    });
 
 /**
  * @swagger
@@ -56,7 +70,7 @@ const { registerRules, loginRules } = require('../validators/authValidator');
  *             schema:
  *               $ref: '#/components/schemas/ValidationErrorResponse'
  */
-router.post('/register', registerRules, validate, register);
+router.post('/register', authLimiter, registerRules, validate, register);
 
 /**
  * @swagger
@@ -82,7 +96,7 @@ router.post('/register', registerRules, validate, register);
  *       422:
  *         description: Validasi gagal
  */
-router.post('/login', loginRules, validate, login);
+router.post('/login', authLimiter, loginRules, validate, login);
 
 /**
  * @swagger

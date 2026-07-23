@@ -38,10 +38,10 @@ const BerkasModel = {
     return rows[0];
   },
 
-  async updateValidasi(id, status_validasi) {
+  async updateValidasi(id, status_validasi, catatan_admin = null) {
     const [result] = await pool.query(
-      'UPDATE berkas_dokumen SET status_validasi = ? WHERE id = ?',
-      [status_validasi, id]
+      'UPDATE berkas_dokumen SET status_validasi = ?, catatan_admin = ? WHERE id = ?',
+      [status_validasi, catatan_admin, id]
     );
     return result;
   },

@@ -21,3 +21,4 @@
 {"authorId":99,"id":1,"judul":"Pengumuman PPDB 2026","level":"info","message":"Berita dibuat","service":"ppdb-annur-api","slug":"pengumuman-ppdb-2026","timestamp":"2026-07-23 03:41:24"}
 {"id":"1","level":"info","message":"Berita di-soft-delete","service":"ppdb-annur-api","timestamp":"2026-07-23 03:41:24"}
 {"id":"2","level":"info","message":"Buku diperbarui","service":"ppdb-annur-api","timestamp":"2026-07-23 03:43:46","title":"Matematika KELAS X "}
+{"error":"Duplicate entry '9999999999' for key 'calon_siswa.nisn'","level":"error","message":"Create Biodata Error","service":"ppdb-annur-api","timestamp":"2026-07-24 02:10:16","userId":16}

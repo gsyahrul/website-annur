@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { FiGrid, FiFileText, FiImage, FiUsers, FiLogOut, FiBook, FiCheckSquare, FiAward, FiChevronDown } from 'react-icons/fi';
+import { FiGrid, FiFileText, FiImage, FiUsers, FiLogOut, FiBook, FiCheckSquare, FiAward, FiChevronDown, FiFolder, FiUserCheck } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import './AdminLayout.css';
 
@@ -10,7 +10,7 @@ const AdminLayout = () => {
     const location = useLocation();
 
     // Auto-expand PPDB menu when on any PPDB sub-route
-    const isPPDBRoute = ['/admin/ppdb', '/admin/verifikasi', '/admin/kelulusan'].some(
+    const isPPDBRoute = ['/admin/ppdb', '/admin/verifikasi', '/admin/verifikasi-berkas', '/admin/kelulusan'].some(
         path => location.pathname.startsWith(path)
     );
     const [ppdbOpen, setPpdbOpen] = useState(isPPDBRoute);
@@ -49,6 +49,7 @@ const AdminLayout = () => {
                         <NavLink to="/admin/ppdb"><FiUsers /> Data Pendaftar</NavLink>
                         <NavLink to="/admin/verifikasi"><FiCheckSquare /> Verifikasi Pembayaran</NavLink>
                         <NavLink to="/admin/kelulusan"><FiAward /> Verifikasi Kelulusan</NavLink>
+                        <NavLink to="/admin/verifikasi-berkas"><FiFolder /> Verifikasi Berkas</NavLink>
                     </div>
 
                     <NavLink to="/admin/buku"><FiBook /> Kelola Buku</NavLink>

@@ -14,6 +14,25 @@ const VerifikasiManager = () => {
     const [detailDocs, setDetailDocs] = useState([]);
     const [docsLoading, setDocsLoading] = useState(false);
     const [previewDoc, setPreviewDoc] = useState(null);
+    const [revisiDocModal, setRevisiDocModal] = useState(null);
+    const [catatanRevisi, setCatatanRevisi] = useState('');
+    const [verifyDocsLoading, setVerifyDocsLoading] = useState(false);
+    const [verifyBuktiDoc, setVerifyBuktiDoc] = useState(null);
+
+    useEffect(() => {
+        if (verifyModal) {
+            setVerifyDocsLoading(true);
+            getDokumenBySiswaId(verifyModal.id)
+                .then(docs => {
+                    const bukti = (docs || []).find(d => d.jenis_dokumen === 'bukti_pembayaran');
+                    setVerifyBuktiDoc(bukti || null);
+                })
+                .catch(() => setVerifyBuktiDoc(null))
+                .finally(() => setVerifyDocsLoading(false));
+        } else {
+            setVerifyBuktiDoc(null);
+        }
+    }, [verifyModal]);
 
     // Open detail modal and load documents
     const openDetail = async (registrant) => {
@@ -306,84 +325,7 @@ const VerifikasiManager = () => {
                                     </div>
                                 )}
                             </div>
-                            {/* Dokumen Section */}
-                            <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--gray-50)', borderRadius: '10px' }}>
-                                <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--gray-600)', marginBottom: '8px' }}>📁 Dokumen Pendaftaran</p>
-                                {docsLoading ? (
-                                    <p style={{ fontSize: '0.85rem', color: 'var(--gray-400)' }}>Memuat dokumen...</p>
-                                ) : (() => {
-                                    const requiredDocs = [
-                                        { key: 'bukti_pembayaran', label: 'Bukti Pembayaran Pendaftaran' },
-                                        { key: 'kk', label: 'Kartu Keluarga (KK)' },
-                                        { key: 'akta_kelahiran', label: 'Akta Kelahiran' },
-                                        { key: 'skl', label: 'Surat Keterangan Lulus (SKL)' },
-                                        { key: 'pas_foto', label: 'Pas Foto 3×4' },
-                                    ];
-                                    const statusMap = {
-                                        pending: { label: '⏳ Pending', bg: '#fef3c7', color: '#92400e' },
-                                        valid: { label: '✅ Valid', bg: '#d1fae5', color: '#065f46' },
-                                        revisi: { label: '⚠️ Revisi', bg: '#fee2e2', color: '#991b1b' },
-                                    };
-                                    const API_URL = import.meta.env.VITE_API_URL || '';
-                                    return (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                            {requiredDocs.map(reqDoc => {
-                                                const doc = detailDocs.find(d => d.jenis_dokumen === reqDoc.key);
-                                                if (!doc) {
-                                                    return (
-                                                        <div key={reqDoc.key} style={{ display: 'flex', alignItems: 'center', padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#fff', border: '1px dashed var(--gray-300)' }}>
-                                                            <FiFile style={{ color: 'var(--gray-300)', marginRight: '0.5rem' }} />
-                                                            <div>
-                                                                <p style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--gray-400)' }}>{reqDoc.label}</p>
-                                                                <span style={{ fontSize: '0.7rem', color: 'var(--gray-400)', fontStyle: 'italic' }}>Belum diunggah</span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                }
-                                                const st = statusMap[doc.status_validasi] || statusMap.pending;
-                                                const fileUrl = `${API_URL}${doc.file_path}`;
-                                                const isImage = /\.(jpg|jpeg|png)$/i.test(doc.file_path);
-                                                return (
-                                                    <div key={doc.id} style={{ padding: '0.6rem 0.75rem', borderRadius: '8px', background: '#fff', border: '1px solid var(--gray-200)' }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isImage ? '0.5rem' : 0 }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                <FiFile style={{ color: 'var(--sage-600)' }} />
-                                                                <div>
-                                                                    <p style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--gray-700)' }}>{reqDoc.label}</p>
-                                                                    <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', background: st.bg, color: st.color, fontWeight: 600 }}>{st.label}</span>
-                                                                </div>
-                                                            </div>
-                                                            <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                                                                <button onClick={() => setPreviewDoc({ url: fileUrl, label: reqDoc.label, isImage })}
-                                                                    style={{ padding: '4px 10px', borderRadius: '6px', background: '#dbeafe', color: '#2563eb', fontSize: '0.72rem', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                                                    <FiEye size={12} /> Lihat
-                                                                </button>
-                                                                <a href={fileUrl} download
-                                                                    style={{ padding: '4px 10px', borderRadius: '6px', background: '#f3e8ff', color: '#7c3aed', fontSize: '0.72rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                                                    <FiDownload size={12} /> Unduh
-                                                                </a>
-                                                                {doc.status_validasi !== 'valid' && (
-                                                                    <button onClick={async () => { await validasiDokumen(doc.id, 'valid'); const docs = await getDokumenBySiswaId(detailModal.id); setDetailDocs(docs || []); }}
-                                                                        style={{ padding: '4px 10px', borderRadius: '6px', background: '#d1fae5', color: '#065f46', fontSize: '0.72rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Validasi</button>
-                                                                )}
-                                                                {doc.status_validasi !== 'revisi' && (
-                                                                    <button onClick={async () => { await validasiDokumen(doc.id, 'revisi'); const docs = await getDokumenBySiswaId(detailModal.id); setDetailDocs(docs || []); }}
-                                                                        style={{ padding: '4px 10px', borderRadius: '6px', background: '#fee2e2', color: '#991b1b', fontSize: '0.72rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Revisi</button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        {isImage && (
-                                                            <img src={fileUrl} alt={reqDoc.label}
-                                                                onClick={() => setPreviewDoc({ url: fileUrl, label: reqDoc.label, isImage: true })}
-                                                                style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '6px', cursor: 'pointer', border: '1px solid var(--gray-200)' }} />
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    );
-                                })()}
-                            </div>
+
                             {/* Action button in detail modal */}
                             {['belum_lengkap', 'menunggu_verifikasi'].includes(detailModal.status_pendaftaran) && (
                                 <div style={{ marginTop: '1.25rem' }}>
@@ -415,6 +357,48 @@ const VerifikasiManager = () => {
                                     Setelah diverifikasi, status akan berubah menjadi &quot;Terverifikasi&quot; dan jadwal tes akan dikirimkan.
                                 </p>
                             </div>
+                            {verifyDocsLoading ? (
+                                <p style={{ fontSize: '0.85rem', color: 'var(--gray-400)', textAlign: 'center', marginBottom: '1rem' }}>Memuat bukti pembayaran...</p>
+                            ) : verifyBuktiDoc ? (
+                                <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                                    <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--gray-600)', marginBottom: '8px' }}>🖼️ Bukti Pembayaran</p>
+                                    <div style={{ display: 'inline-block', position: 'relative' }}>
+                                        <img src={`${import.meta.env.VITE_API_URL || ''}${verifyBuktiDoc.file_path}`} alt="Bukti Pembayaran" className="img-fluid rounded shadow-sm d-block mx-auto" style={{ maxHeight: '250px', objectFit: 'contain', border: '1px solid var(--gray-200)' }} />
+                                        {verifyBuktiDoc.status_validasi && (
+                                            <span style={{ position: 'absolute', top: '10px', right: '10px', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, background: verifyBuktiDoc.status_validasi === 'valid' ? '#d1fae5' : verifyBuktiDoc.status_validasi === 'revisi' ? '#fee2e2' : '#fef3c7', color: verifyBuktiDoc.status_validasi === 'valid' ? '#065f46' : verifyBuktiDoc.status_validasi === 'revisi' ? '#991b1b' : '#92400e', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                                                {verifyBuktiDoc.status_validasi === 'valid' ? '✅ Valid' : verifyBuktiDoc.status_validasi === 'revisi' ? '⚠️ Revisi' : '⏳ Pending'}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
+                                        {verifyBuktiDoc.status_validasi !== 'valid' && (
+                                            <button style={{ display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: '0.85rem', padding: '6px 16px', borderRadius: '6px', background: '#d1fae5', color: '#065f46', border: 'none', cursor: 'pointer' }} onClick={async () => {
+                                                try {
+                                                    await validasiDokumen(verifyBuktiDoc.id, 'valid');
+                                                    setVerifyBuktiDoc({ ...verifyBuktiDoc, status_validasi: 'valid' });
+                                                } catch(err) {
+                                                    alert('Gagal memvalidasi: ' + err.message);
+                                                }
+                                            }}>
+                                                <FiCheckCircle style={{ marginRight: '6px' }} /> Validasi
+                                            </button>
+                                        )}
+                                        {verifyBuktiDoc.status_validasi !== 'revisi' && (
+                                            <button style={{ display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: '0.85rem', padding: '6px 16px', borderRadius: '6px', background: '#fee2e2', color: '#991b1b', border: 'none', cursor: 'pointer' }} onClick={() => { 
+                                                setRevisiDocModal(verifyBuktiDoc); 
+                                                setCatatanRevisi(verifyBuktiDoc.catatan_admin || ''); 
+                                            }}>
+                                                <FiX style={{ marginRight: '6px' }} /> Revisi
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ marginBottom: '1.5rem', textAlign: 'center', padding: '1rem', background: '#fee2e2', borderRadius: '8px' }}>
+                                    <p style={{ fontSize: '0.85rem', color: '#991b1b', margin: 0 }}>⚠️ Pendaftar belum mengunggah bukti pembayaran.</p>
+                                </div>
+                            )}
+
                             <div style={{
                                 background: 'linear-gradient(135deg, var(--sage-50), var(--emerald-50))',
                                 border: '1px solid var(--sage-200)', borderRadius: '10px',
@@ -433,21 +417,59 @@ const VerifikasiManager = () => {
 
                             <div className="form-group">
                                 <label><FiCalendar style={{ marginRight: '4px' }} /> Tanggal Tes *</label>
-                                <input type="date" className="form-input" value={jadwalTes.tanggal} onChange={e => setJadwalTes({ ...jadwalTes, tanggal: e.target.value })} />
+                                <input type="date" className="form-input" disabled={verifyBuktiDoc?.status_validasi !== 'valid'} value={jadwalTes.tanggal} onChange={e => setJadwalTes({ ...jadwalTes, tanggal: e.target.value })} />
                             </div>
                             <div className="form-group">
                                 <label><FiClock style={{ marginRight: '4px' }} /> Waktu Tes *</label>
-                                <input type="time" className="form-input" value={jadwalTes.waktu} onChange={e => setJadwalTes({ ...jadwalTes, waktu: e.target.value })} />
+                                <input type="time" className="form-input" disabled={verifyBuktiDoc?.status_validasi !== 'valid'} value={jadwalTes.waktu} onChange={e => setJadwalTes({ ...jadwalTes, waktu: e.target.value })} />
                             </div>
                             <div className="form-group">
                                 <label>Lokasi Tes</label>
-                                <input className="form-input" value={jadwalTes.lokasi} onChange={e => setJadwalTes({ ...jadwalTes, lokasi: e.target.value })} />
+                                <input className="form-input" disabled={verifyBuktiDoc?.status_validasi !== 'valid'} value={jadwalTes.lokasi} onChange={e => setJadwalTes({ ...jadwalTes, lokasi: e.target.value })} />
                             </div>
                         </div>
                         <div className="admin-modal-footer">
                             <button className="btn-cancel" onClick={() => setVerifyModal(null)}>Batal</button>
-                            <button className="btn-add" onClick={handleVerify} disabled={saving || !jadwalTes.tanggal || !jadwalTes.waktu}>
+                            <button className="btn-add" onClick={handleVerify} disabled={saving || !jadwalTes.tanggal || !jadwalTes.waktu || verifyBuktiDoc?.status_validasi !== 'valid'}>
                                 {saving ? 'Memproses...' : <><FiCheckCircle /> Verifikasi & Kirim Jadwal</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Revisi Catatan Modal */}
+            {revisiDocModal && (
+                <div className="admin-modal-overlay" onClick={() => setRevisiDocModal(null)} style={{ zIndex: 10001 }}>
+                    <div className="admin-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+                        <div className="admin-modal-header">
+                            <h3>Catatan Revisi Dokumen</h3>
+                            <button className="admin-modal-close" onClick={() => setRevisiDocModal(null)}><FiX /></button>
+                        </div>
+                        <div className="admin-modal-body">
+                            <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '10px', padding: '1rem', marginBottom: '1.5rem' }}>
+                                <p style={{ fontSize: '0.85rem', color: '#991b1b' }}>Berikan catatan revisi untuk dokumen ini. Catatan akan ditampilkan kepada calon siswa.</p>
+                            </div>
+                            <div className="form-group">
+                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--gray-600)', marginBottom: '6px' }}>📝 Catatan Revisi</label>
+                                <textarea className="form-input" rows="4" placeholder="Contoh: Foto tidak jelas, mohon upload ulang..."
+                                    value={catatanRevisi} onChange={e => setCatatanRevisi(e.target.value)}
+                                    style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--gray-200)', borderRadius: '10px', fontSize: '0.9rem', fontFamily: 'inherit', color: 'var(--gray-700)', outline: 'none', resize: 'vertical' }} />
+                            </div>
+                        </div>
+                        <div className="admin-modal-footer">
+                            <button className="btn-cancel" onClick={() => setRevisiDocModal(null)}>Batal</button>
+                            <button className="btn-add" disabled={saving} onClick={async () => {
+                                setSaving(true);
+                                try {
+                                    await validasiDokumen(revisiDocModal.id, 'revisi', catatanRevisi);
+                                    if (detailModal) { const docs = await getDokumenBySiswaId(detailModal.id); setDetailDocs(docs || []); }
+                                    if (verifyModal && verifyBuktiDoc?.id === revisiDocModal.id) { setVerifyBuktiDoc({ ...verifyBuktiDoc, status_validasi: 'revisi', catatan_admin: catatanRevisi }); }
+                                    setRevisiDocModal(null); setCatatanRevisi('');
+                                } catch (err) { alert('Gagal: ' + err.message); }
+                                finally { setSaving(false); }
+                            }} style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}>
+                                {saving ? 'Memproses...' : 'Tandai Revisi & Kirim Catatan'}
                             </button>
                         </div>
                     </div>
