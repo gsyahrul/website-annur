@@ -363,6 +363,7 @@ export async function createBuku(data) {
     if (data.badge) formData.append('badge', data.badge);
     if (data.color) formData.append('color', data.color);
     if (data.file) formData.append('file', data.file);
+    if (data.cover) formData.append('cover', data.cover);
     const res = await apiFormFetch('/api/buku', formData);
     return res.data;
 }
@@ -375,6 +376,7 @@ export async function updateBuku(id, data) {
     if (data.badge !== undefined) formData.append('badge', data.badge);
     if (data.color) formData.append('color', data.color);
     if (data.file) formData.append('file', data.file);
+    if (data.cover) formData.append('cover', data.cover);
     const res = await apiFormFetch(`/api/buku/${id}`, formData, 'PUT');
     return res.data || res;
 }

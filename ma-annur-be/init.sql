@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS buku (
     category VARCHAR(50) NOT NULL,
     badge VARCHAR(50),
     color VARCHAR(20) DEFAULT '#4a7a4a',
+    cover_image VARCHAR(255) DEFAULT NULL,
     file_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

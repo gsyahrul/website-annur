@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiBook, FiUpload, FiFile, FiExternalLink } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiBook, FiUpload, FiFile, FiExternalLink, FiImage } from 'react-icons/fi';
 import { fetchAllBuku, createBuku, updateBuku, deleteBuku, getAssetUrl } from '../lib/directus';
 
 const CATEGORIES = [
@@ -33,7 +33,7 @@ const BukuManager = () => {
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ title: '', author: '', category: '', badge: '', color: '#4a7a4a', file: null });
+    const [form, setForm] = useState({ title: '', author: '', category: '', badge: '', color: '#4a7a4a', file: null, cover: null });
     const [saving, setSaving] = useState(false);
     const [filterCat, setFilterCat] = useState('');
 
@@ -49,13 +49,13 @@ const BukuManager = () => {
 
     const openAdd = () => {
         setEditing(null);
-        setForm({ title: '', author: '', category: 'kelas-x', badge: 'Kurikulum', color: '#4a7a4a', file: null });
+        setForm({ title: '', author: '', category: 'kelas-x', badge: 'Kurikulum', color: '#4a7a4a', file: null, cover: null });
         setModalOpen(true);
     };
 
     const openEdit = (b) => {
         setEditing(b);
-        setForm({ title: b.title, author: b.author, category: b.category, badge: b.badge, color: b.color, file: null });
+        setForm({ title: b.title, author: b.author, category: b.category, badge: b.badge, color: b.color, file: null, cover: null });
         setModalOpen(true);
     };
 
@@ -114,7 +114,7 @@ const BukuManager = () => {
                 <table className="admin-table">
                     <thead>
                         <tr>
-                            <th>Warna</th>
+                            <th>Cover</th>
                             <th>Judul</th>
                             <th>Penulis</th>
                             <th>Kategori</th>
@@ -132,9 +132,17 @@ const BukuManager = () => {
                             filtered.map(b => (
                                 <tr key={b.id}>
                                     <td>
-                                        <div style={{ width: 28, height: 36, borderRadius: 4, background: `linear-gradient(135deg, ${b.color}, ${b.color}dd)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <FiBook style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem' }} />
-                                        </div>
+                                        {b.cover_image ? (
+                                            <img
+                                                src={getAssetUrl(b.cover_image)}
+                                                alt={b.title}
+                                                style={{ width: 28, height: 36, borderRadius: 4, objectFit: 'cover', border: '1px solid var(--gray-200)' }}
+                                            />
+                                        ) : (
+                                            <div style={{ width: 28, height: 36, borderRadius: 4, background: `linear-gradient(135deg, ${b.color}, ${b.color}dd)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <FiBook style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem' }} />
+                                            </div>
+                                        )}
                                     </td>
                                     <td style={{ fontWeight: 500, color: 'var(--gray-700)', maxWidth: '250px' }}>{b.title}</td>
                                     <td>{b.author}</td>
@@ -197,7 +205,7 @@ const BukuManager = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Warna Cover</label>
+                                <label>Warna Tema Fallback</label>
                                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                     {COLORS.map(c => (
                                         <button
@@ -215,12 +223,64 @@ const BukuManager = () => {
                                 </div>
                             </div>
 
-                            {/* File Upload */}
+                            {/* Cover Image Upload */}
+                            <div className="form-group">
+                                <label>Gambar Cover Buku (JPG/PNG)</label>
+                                <div style={{
+                                    border: '2px dashed var(--gray-200)', borderRadius: '12px',
+                                    padding: '1.25rem', textAlign: 'center', cursor: 'pointer',
+                                    transition: 'all 0.3s', background: form.cover ? 'var(--emerald-50)' : 'var(--gray-50)',
+                                    marginBottom: '0.5rem'
+                                }}
+                                    onClick={() => document.getElementById('buku-cover-input').click()}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--sage-400)'; e.currentTarget.style.background = 'var(--sage-50)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--gray-200)'; e.currentTarget.style.background = form.cover ? 'var(--emerald-50)' : 'var(--gray-50)'; }}
+                                >
+                                    <input
+                                        id="buku-cover-input"
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/jpg"
+                                        style={{ display: 'none' }}
+                                        onChange={e => setForm({ ...form, cover: e.target.files[0] || null })}
+                                    />
+                                    {form.cover ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--emerald-700)' }}>
+                                            <FiImage size={20} />
+                                            <span style={{ fontWeight: 500 }}>{form.cover.name}</span>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setForm({ ...form, cover: null }); }}
+                                                style={{ background: 'none', border: 'none', color: 'var(--gray-400)', cursor: 'pointer', padding: '4px' }}
+                                            ><FiX size={16} /></button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <FiImage size={24} style={{ color: 'var(--gray-400)', marginBottom: '6px' }} />
+                                            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', margin: 0 }}>
+                                                Klik untuk upload Gambar Cover
+                                            </p>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)', margin: '4px 0 0' }}>
+                                                JPG, PNG (Opsional)
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                                {editing?.cover_image && !form.cover && (
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--sage-600)', marginTop: '4px' }}>
+                                        🖼️ Cover saat ini:{' '}
+                                        <a href={getAssetUrl(editing.cover_image)} target="_blank" rel="noopener noreferrer"
+                                           style={{ color: 'var(--sage-600)', fontWeight: 500 }}>
+                                            Lihat Cover
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* File Upload (PDF) */}
                             <div className="form-group">
                                 <label>File Buku (PDF)</label>
                                 <div style={{
                                     border: '2px dashed var(--gray-200)', borderRadius: '12px',
-                                    padding: '1.5rem', textAlign: 'center', cursor: 'pointer',
+                                    padding: '1.25rem', textAlign: 'center', cursor: 'pointer',
                                     transition: 'all 0.3s', background: form.file ? 'var(--emerald-50)' : 'var(--gray-50)'
                                 }}
                                     onClick={() => document.getElementById('buku-file-input').click()}
@@ -245,12 +305,12 @@ const BukuManager = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            <FiUpload size={24} style={{ color: 'var(--gray-400)', marginBottom: '8px' }} />
+                                            <FiUpload size={24} style={{ color: 'var(--gray-400)', marginBottom: '6px' }} />
                                             <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', margin: 0 }}>
                                                 Klik untuk upload file PDF
                                             </p>
                                             <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)', margin: '4px 0 0' }}>
-                                                Maks. 5MB
+                                                Maks. 50MB
                                             </p>
                                         </>
                                     )}

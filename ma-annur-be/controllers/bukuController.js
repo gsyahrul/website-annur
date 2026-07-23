@@ -37,13 +37,26 @@ const getAllBooks = async (req, res) => {
 
 /**
  * POST /api/buku (Admin only)
- * Create a new book. Supports optional file upload.
+ * Create a new book. Supports optional PDF file and Cover Image upload.
  */
 const createBook = async (req, res) => {
   try {
     const { title, author, category, badge, color } = req.body;
-    const file_url = req.file ? `/uploads/${req.file.filename}` : null;
-    const result = await BukuModel.create({ title, author, category, badge, color, file_url });
+    const pdfFile = req.files?.file?.[0] || req.file;
+    const coverFile = req.files?.cover?.[0];
+
+    const file_url = pdfFile ? `/uploads/${pdfFile.filename}` : null;
+    const cover_image = coverFile ? `/uploads/${coverFile.filename}` : null;
+
+    const result = await BukuModel.create({
+      title,
+      author,
+      category,
+      badge,
+      color,
+      cover_image,
+      file_url,
+    });
     logger.info('Buku dibuat', { id: result.id, title });
     res.status(201).json({
       success: true,
@@ -58,7 +71,7 @@ const createBook = async (req, res) => {
 
 /**
  * PUT /api/buku/:id (Admin only)
- * Update a book. Supports optional file upload.
+ * Update a book. Supports optional PDF file and Cover Image upload.
  */
 const updateBook = async (req, res) => {
   try {
@@ -68,13 +81,19 @@ const updateBook = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Buku tidak ditemukan.' });
     }
     const { title, author, category, badge, color } = req.body;
-    const file_url = req.file ? `/uploads/${req.file.filename}` : existing.file_url;
+    const pdfFile = req.files?.file?.[0] || req.file;
+    const coverFile = req.files?.cover?.[0];
+
+    const file_url = pdfFile ? `/uploads/${pdfFile.filename}` : existing.file_url;
+    const cover_image = coverFile ? `/uploads/${coverFile.filename}` : existing.cover_image;
+
     await BukuModel.update(id, {
       title: title || existing.title,
       author: author || existing.author,
       category: category || existing.category,
       badge: badge !== undefined ? badge : existing.badge,
       color: color || existing.color,
+      cover_image,
       file_url,
     });
     logger.info('Buku diperbarui', { id, title: title || existing.title });

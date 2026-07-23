@@ -82,7 +82,7 @@ router.get('/admin/all', verifyToken, authorizeRoles('admin'), getAllBooks);
  *       201:
  *         description: Buku berhasil ditambahkan
  */
-router.post('/', verifyToken, authorizeRoles('admin'), upload.single('file'), createBook);
+
 
 /**
  * @swagger
@@ -136,7 +136,13 @@ router.post('/', verifyToken, authorizeRoles('admin'), upload.single('file'), cr
  *       404:
  *         description: Buku tidak ditemukan
  */
-router.put('/:id', verifyToken, authorizeRoles('admin'), upload.single('file'), updateBook);
+const uploadBookFiles = upload.fields([
+  { name: 'file', maxCount: 1 },
+  { name: 'cover', maxCount: 1 },
+]);
+
+router.post('/', verifyToken, authorizeRoles('admin'), uploadBookFiles, createBook);
+router.put('/:id', verifyToken, authorizeRoles('admin'), uploadBookFiles, updateBook);
 router.delete('/:id', verifyToken, authorizeRoles('admin'), deleteBook);
 
 module.exports = router;

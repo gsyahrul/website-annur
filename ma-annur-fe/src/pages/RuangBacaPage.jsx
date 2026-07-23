@@ -110,20 +110,30 @@ const RuangBacaPage = () => {
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         position: 'relative', overflow: 'hidden'
                                     }}>
-                                        <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.15 }}>
-                                            <pattern id={`bp-${book.id}`} x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                                                <circle cx="20" cy="20" r="8" fill="rgba(255,255,255,0.3)" />
-                                            </pattern>
-                                            <rect width="100%" height="100%" fill={`url(#bp-${book.id})`} />
-                                        </svg>
-                                        <div style={{ position: 'relative', zIndex: 1, fontSize: '2.5rem', color: 'rgba(255,255,255,0.9)' }}>
-                                            {getIcon(book.badge)}
-                                        </div>
+                                        {book.cover_image ? (
+                                            <img
+                                                src={getAssetUrl(book.cover_image)}
+                                                alt={book.title}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
+                                        ) : (
+                                            <>
+                                                <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.15 }}>
+                                                    <pattern id={`bp-${book.id}`} x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                                                        <circle cx="20" cy="20" r="8" fill="rgba(255,255,255,0.3)" />
+                                                    </pattern>
+                                                    <rect width="100%" height="100%" fill={`url(#bp-${book.id})`} />
+                                                </svg>
+                                                <div style={{ position: 'relative', zIndex: 1, fontSize: '2.5rem', color: 'rgba(255,255,255,0.9)' }}>
+                                                    {getIcon(book.badge)}
+                                                </div>
+                                            </>
+                                        )}
                                         {/* File indicator */}
                                         {book.file_url && (
                                             <div style={{
                                                 position: 'absolute', top: '10px', right: '10px', zIndex: 2,
-                                                background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)',
+                                                background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
                                                 padding: '4px 10px', borderRadius: '8px',
                                                 display: 'flex', alignItems: 'center', gap: '4px',
                                                 fontSize: '0.7rem', color: 'white', fontWeight: 600

@@ -38,6 +38,12 @@ describe('Dashboard API', () => {
         .mockResolvedValueOnce([[{           // berita stats
           total_berita: 8, published: 6, draft: 2,
         }]])
+        .mockResolvedValueOnce([[{           // galeri stats
+          total_galeri: 5,
+        }]])
+        .mockResolvedValueOnce([[{           // buku stats
+          total_buku: 10,
+        }]])
         .mockResolvedValueOnce([[            // pendaftar terbaru
           { id: 1, nisn: '1234567890', nama_lengkap: 'Ahmad' },
         ]]);

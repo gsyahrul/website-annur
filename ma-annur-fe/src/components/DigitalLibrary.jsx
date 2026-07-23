@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiBookOpen, FiBook, FiGlobe, FiClock, FiAward } from 'react-icons/fi';
-import { fetchBuku } from '../lib/directus';
+import { fetchBuku, getAssetUrl } from '../lib/directus';
 import './DigitalLibrary.css';
 
 const DigitalLibrary = () => {
@@ -61,18 +61,28 @@ const DigitalLibrary = () => {
                     <div className="library-grid">
                         {books.map((book) => (
                             <div className="book-card" key={book.id}>
-                                <div className="book-cover" style={{ background: `linear-gradient(135deg, ${book.color || '#4a7a4a'}, ${book.color || '#4a7a4a'}dd)` }}>
-                                    <div className="book-cover-pattern">
-                                        <svg width="100%" height="100%">
-                                            <pattern id={`pat-${book.id}`} x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                                                <circle cx="20" cy="20" r="8" fill="rgba(255,255,255,0.3)" />
-                                            </pattern>
-                                            <rect width="100%" height="100%" fill={`url(#pat-${book.id})`} />
-                                        </svg>
-                                    </div>
-                                    <div className="book-cover-icon" style={{ color: 'rgba(255,255,255,0.9)' }}>
-                                        {getIcon(book.badge)}
-                                    </div>
+                                <div className="book-cover" style={{ background: `linear-gradient(135deg, ${book.color || '#4a7a4a'}, ${book.color || '#4a7a4a'}dd)`, overflow: 'hidden' }}>
+                                    {book.cover_image ? (
+                                        <img
+                                            src={getAssetUrl(book.cover_image)}
+                                            alt={book.title}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <>
+                                            <div className="book-cover-pattern">
+                                                <svg width="100%" height="100%">
+                                                    <pattern id={`pat-${book.id}`} x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                                                        <circle cx="20" cy="20" r="8" fill="rgba(255,255,255,0.3)" />
+                                                    </pattern>
+                                                    <rect width="100%" height="100%" fill={`url(#pat-${book.id})`} />
+                                                </svg>
+                                            </div>
+                                            <div className="book-cover-icon" style={{ color: 'rgba(255,255,255,0.9)' }}>
+                                                {getIcon(book.badge)}
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                                 <div className="book-info">
                                     <h4>{book.title}</h4>
